@@ -1,0 +1,158 @@
+1. Create a directory named "cli_assignment".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir$ mkdir cli_assignment
+
+2. Change the current working directory to the new directory created in the previous
+step.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir$ cd cli_assignment
+
+3. Create a new file named "stuff.txt". Use the touch command to do this. Read about
+the touch command using the manual (man) pages.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir/cli_assignment$ touch stuff.txt
+
+4. Add some text (multiple lines) to this text file using the cat command.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir/cli_assignment$ cat >> stuff.txt
+Here is some text
+and also here
+and there
+and also there 
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir/cli_assignment$ cat *stuff.txt //display the texts
+Here is some text
+and also here
+and there
+
+5. Count the number of words and the number of lines in the file "stuff.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir/cli_assignment$ wc -w stuff.txt
+12 stuff.txt
+
+6. Append more text to the file "stuff.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir/cli_assignment$ cat >> stuff.txt
+
+More added texts
+what day is today
+more texts
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir/cli_assignment$ cat *stuff.txt
+Here is some text
+and also here
+and there
+and also there More added texts
+what day is today
+more texts
+
+7. In the current working directory, create a new directory "draft".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/Desktop/dir/cli_assignment$ mkdir draft
+
+8. Move the "stuff.txt" file to the directory "draft".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ mv -v stuff.txt draft/
+
+9. Change your working directory to "draft" and create a hidden file named "secret.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ cd draft
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/draft$ touch .secret.txt
+
+10. Create a new directory ("final") as a copy of the "draft" directory (final should be on
+the same level as draft) using the copy command.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ cp -r draft/ final
+
+11. Rename the "draft" directory to "draft.remove". Use the mv command for this.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ mv -v draft draft.remove
+
+12. Move the "draft.remove" directory to inside the "final" directory. Use the mv command for this.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ mv -v draft.remove final
+
+13. From inside the "cli_assignment" directory, list all the files and sub-directories and
+their permissions.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ ls -l .
+total 0
+drwxrwxrwx 1 triplit triplit 4096 Jan 13 11:33 final
+
+14. List the contents of the given file "NASA_access_log_Aug95.gz" without extracting
+it. (The file should be on the same level as your "cli_assignment" directory)
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ zmore NASA_access_log_Aug95.gz
+
+15. Extract the given file "NASA_access_log_Aug95.gz".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ gunzip NASA_access_log_Aug95.gz
+
+16. Rename the extracted file to "logs.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ mv NASA_access_log_Aug95 logs.txt
+
+17. Move the file "logs.txt" to the "cli_assignment" directory.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ mv logs.txt final/
+
+18. Read the top 100 lines of the file "logs.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ head -n 100 logs.txt
+
+19. Create a new file "logs_top_100.txt" containing the top 100 lines using I/O redirection.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ head -n 100 logs.txt > logs_top_100.txt
+
+20. Read the bottom 100 lines of the file "logs.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ tail -n 100 logs.txt
+
+21. Create a new file "logs_bottom_100.txt" containing the bottom 100 lines using I/O
+redirection.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ tail -n 100 logs.txt > logs_bottom_10
+0.txt
+
+22. Create a new file "logs_snapshot.txt" by concatenating files "logs_top_100.txt" and
+"logs_bottom_100.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ cat logs_top_100.txt logs_bottom_100.
+txt > logs_snapshot.txt
+
+23. Now append to the "logs_snapshot.txt" the line "asurite: This is a great assignment"
+and the current date (asurite is your asurite, e.g. amehlhas for me)
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ echo jcnguye: This is a great assignm
+ent 1/13/2023 >> logs_snapshot.txt
+
+24. Read the file "logs.txt" using the less command.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ less logs.txt
+
+25. Using the given file "marks.csv" (delimited by %), print the column "student_names"
+without the header (you can use the column num as index). Use the cut command
+and I/O redirection. (This file should be on the same level as your "cli_assignment"
+directory)
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir$ cut -d% -f1 marks.csv
+
+26. Using the given file "marks.csv", print the sorted list of marks in "subject_3". Use
+the sort command piped with the cut command.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir$ cut -d% -f3 marks.csv | sort -n > sorted_marks.txt
+
+27. Using the given file "marks.csv", print the average marks for "subject_2" (it is ok to
+us awk).
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir$ awk -F% '{sum += $2; count++} END {print sum/count}' marks.csv
+
+28. Save the average into a new file "done.txt" inside of the "cli_assignment" directory.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir$ awk -F% '{sum += $2; count++} END {print sum/count}' marks.csv > done.txt
+
+29. Move "done.txt" into your "final" directory.
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment$ mv done.txt final
+
+30. Rename the "done.txt" file to "average.txt".
+
+triplit@LAPTOP-GNHUPECB:/mnt/c/Users/nguye/desktop/dir/cli_assignment/final$ mv done.txt average.txt
