@@ -205,7 +205,6 @@ class WebServer {
           try {
           Map<String, String> query_pairs = new LinkedHashMap<String, String>();
           // extract path parameters
-
           query_pairs = splitQuery(request.replace("multiply?", ""));
             if (query_pairs.size() != 2) {
               builder.append("HTTP/1.1 406 Not Acceptable\n");
@@ -289,7 +288,7 @@ class WebServer {
                   builder.append("  id: " + owner1.get("id") + "<br>");
                   builder.append("  login: " + owner1.get("login"));
                   builder.append("  },<br>");
-                  builder.append(" {<br>fullname: " + obj2.get("full_name") + "\n");
+                  builder.append(" {<br>fullname: " + obj2.get("full_name") + "<br>");
                   builder.append("  id: " + owner2.get("id") + "<br>");
                   builder.append("  login: " + owner2.get("login"));
                   builder.append("  }<br>");
@@ -330,8 +329,12 @@ class WebServer {
               String[] st1 = nu1.split("=");
               String nu2 = strArr[1];
               String[] st2 = nu2.split("=");
-
-              if((st1[0].equals("firstname")&& st2[0].equals("lastname")) && (nu1.contains("=") && nu2.contains("="))){
+              if(st1.length != 2 || st2.length != 2){
+                builder.append("HTTP/1.1 400 Bad Request\n");
+                builder.append("Content-Type: text/html; charset=utf-8\n");
+                builder.append("\n");
+                builder.append("Not the right querys or missing");
+              }else if ((st1[0].equals("firstname")&& st2[0].equals("lastname")) && (nu1.contains("=") && nu2.contains("="))){
                 builder.append("HTTP/1.1 200 ok\n");
                 builder.append("Content-Type: text/html; charset=utf-8\n");
                 builder.append("\n");
