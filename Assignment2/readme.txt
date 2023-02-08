@@ -1,0 +1,1 @@
+Inside webserver holds the src code for server simply run the src code by calling gradle FunWebServer
