@@ -1,0 +1,85 @@
+[x]1. (3 points) When the clients starts up it should connect to the server. The server will
+reply by asking for the name of the player.
+
+[x]2. (3 points) The client should send their name and the server should receive it and
+greet the client by name.
+
+[x]3. (3 points) The client should be presented a choice between seeing a leader board or
+playing the game (make the interface easy so a user will know what to do).
+
+[x](Client name showing on leader board, not points)4. (4 points) The leader board will show all players that have played since the server
+started with their name and points. The server will maintain the leader board and
+send it to the client when requested. Add on: 3 more points if the leader board
+is persistent even when the server is restarted (we did not cover this in class yet
+though).
+
+[x]5. (3 points) If the client chooses to start the game, the server will then send over a first
+quote of a character – you need to print the intended answer in the server terminal
+to simplify grading for us.
+
+[x]6. (3 points) The client can then either enter a guess, e.g. "Jack Sparrow", type "more"
+or "next". See what these options do below.
+
+[x]7. (5 points) The client enters a guess and the server must check the guess and respond
+accordingly. If the answer is correct then they will get a new picture with a new
+quote (or they might win - see later). If the answer is incorrect they will be informed
+that the answer was incorrect and can try again.
+
+[x](when user types more for the 6 or 7 time gives them image again)8. (4 points) If the client enters "more" then they will get another quote from the same
+movie character. If they enter "more" when the last image was already displayed for
+this picture then they need to be informed that there are no more pictures (quotes)
+for this character.
+
+[x](not accounting for amount of characters available)9. (7 points) Users can always enter "next" which will make the server send a new
+quote for a new character. If there are no more characters available you can show
+one of the old ones or inform the user and quit the round. You may implement other
+options but do not let things crash.
+
+[x]10. (4 points) If the server receives 3 correct guesses and the timer did not run out (1
+minute), then the server will send a "winner" image (display in UI or open frame
+when using terminal).
+
+[x]11. (5 points) If the server receives a guess and the timer ran out the client lost and will
+get a "loser" image and message (display in UI or open frame when using terminal).
+
+[x]12. (7 points) We also want a point system so that you get more points for answering
+faster without asking for more quotes. The point system is to be maintained on the
+server! If you answer on the first quote you get 5 points, answer on the second 4
+points, on the third 3 points and on the last one 1 point. If the user types "next" they
+loose 2 points (overall points for a round can be negative). Current points should
+always be displayed on the client GUI (or in the terminal).
+
+[x]13. (2 points) At the end of a game (if lost or won) display how many points the client
+got. If the user lost, the leader board does not change. If they won add their new
+points to their old points on the leader board. You can assume that their name
+always identifies them.
+
+14. Evaluations of the input needs to happen on the server side; the client will not know
+the pictures, their corresponding answers, the points, or the leader board. The
+correct answers should not be sent to the client. No real points for this since if this
+is not done then you do not really use the client/server correctly. So this will lead
+to deductions above.
+
+[x](Not yet include protocal design)15. (4 points) Your protocol must be robust. If a command that is not understood
+is sent to the server or an incorrect parameterization of the command, then the
+protocol should define how these are indicated. Your protocol must have headers
+and optionally payloads. This means in the context of one logical message the
+receiver of the message has to be able to read a header, understand the metadata
+it provides, and use it to assist with processing a payload (if one is even present).
+This protocol needs to be described in detail in the README.md.
+
+[x] (could handle more erros)16. (7 points) Your programs must be robust. If errors occur on either the client or server
+or if there is a network problem, you have to consider how these should be handled
+in the most recoverable and informative way possible. Implement good general error
+handling and output. Your client/server should not crash even when invalid inputs
+are provided by the user.
+
+[x]17. (3 points) After the player wins/loses they can start a new game by entering their
+name again or they can quit by typing "quit". After entering their name they can
+choose start or the leader board again.
+
+[/] (did not implement)18. (3 points) - advice: skip this until you have everything else then get back to this:
+If a game is in progress and a second client tries to connect, they should receive a
+message that a game is already in progress and they cannot connect. How exactly
+you handle this, whether you let the client wait or just do not let them do anything
+anymore, is up to you. DO NOT use threads, yes I know I am mean.
