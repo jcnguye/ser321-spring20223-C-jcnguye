@@ -425,9 +425,7 @@ public class ServerTcp {
                 if((gameState == States.GameViktory && !choice.equals(""))) {
                     message.put("type", "won");
                     message.put("message", "you won, heres your prize!!!!!,type 'play' to play again or leader to see leaderboard");
-//                    score = message.getInt("score");
-                    String name = message.getString("name");
-                    leaderboard.put(name,score);
+                    leaderboard.put(clientName,score);
                     res = message;
                     gameState = States.GameMenu;
                     numTrys = 0;
@@ -436,9 +434,6 @@ public class ServerTcp {
                 if((gameState == States.Gameloss && !choice.equals(""))){
                     message.put("type", "loss");
                     message.put("message", "haha you lose your time as expired, type 'play' to play again or leader to see leaderboard");
-//                    score = message.getInt("score");
-//                    String name = message.getString("name");
-//                    leaderboard.put(name,score);
                     res = message;
                     gameState = States.GameMenu;
                     numTrys = 0;
