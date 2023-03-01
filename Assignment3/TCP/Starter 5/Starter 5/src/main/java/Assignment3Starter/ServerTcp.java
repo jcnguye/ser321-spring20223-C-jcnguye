@@ -402,11 +402,12 @@ public class ServerTcp {
                             message.put("type",choice);
                             message.put("messsage", "exiting game going back to menu");
                             score = message.getInt("score");
-                            String name = message.getString("name");
-                            leaderboard.put(name,score);
+//                            String name = message.getString("name");
+                            leaderboard.put(clientName,score);
                             res = message;
                             gameState = States.GameMenu;
                             numTrys = 0;
+                            clientName = "";
                             break;
                         case "error":
                             res = errorReq();
