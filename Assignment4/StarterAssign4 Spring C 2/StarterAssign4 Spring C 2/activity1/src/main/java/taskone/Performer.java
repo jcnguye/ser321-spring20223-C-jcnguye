@@ -189,7 +189,7 @@ class Performer implements Runnable{
     }
 
     @Override
-    public synchronized void run() {
+    synchronized public void run() {
         boolean quit = false;
         OutputStream out = null;
         InputStream in = null;

@@ -15,13 +15,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 import org.json.JSONObject;
 
 /**
  * Class: Server
  * Description: Server tasks.
  */
-class ThreadedPoolServer {
+class ThreadedPoolServer extends Thread{
 
     public static void main(String[] args) throws Exception {
         int port;
@@ -42,17 +45,25 @@ class ThreadedPoolServer {
         ServerSocket server = new ServerSocket(port);
         System.out.println("Server Started...");
         while (true) {
-            System.out.println("Accepting a Request...");
-            Socket sock = server.accept();
 
-            Performer performer = new Performer(sock, strings);
-            performer.doPerform();
-            try {
-                System.out.println("close socket off client ");
-                sock.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+
+//            Performer performer = new Performer(sock, strings);
+//            performer.doPerform();
+
+            Executor pool = Executors.newFixedThreadPool(3);
+            for (int i=0; i < 3; i++) {
+                System.out.println("Accepting a Request...");
+                Socket sock = server.accept();
+                pool.execute(new Performer(sock, strings));
             }
+
+
+//            try {
+//                System.out.println("close socket off client ");
+//                sock.close();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         }
     }
 }

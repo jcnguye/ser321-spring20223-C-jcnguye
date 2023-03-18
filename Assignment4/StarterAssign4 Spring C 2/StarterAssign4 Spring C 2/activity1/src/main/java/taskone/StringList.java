@@ -13,18 +13,18 @@ class StringList {
             strings.add(str);
         }
     }
-    public void clear(){
+    synchronized public void clear(){
         for(int i = 0; i < size(); i++){
             strings.clear();
         }
     }
-    public int indexOf(String str){
+    synchronized public int indexOf(String str){
         if(contains(str)){
             return strings.indexOf(str);
         }
         return -1;
     }
-    public String delete(int idx){
+    synchronized public String delete(int idx){
         if(idx < 0 || idx > size()){
             return "";
         }else{
@@ -33,7 +33,7 @@ class StringList {
             return item;//true
         }
     }
-    public boolean prepend(String str,int idx){
+    synchronized public boolean prepend(String str,int idx){
         if(idx > size() || idx < 0){
             System.out.println("Out of bound");
             return false;
