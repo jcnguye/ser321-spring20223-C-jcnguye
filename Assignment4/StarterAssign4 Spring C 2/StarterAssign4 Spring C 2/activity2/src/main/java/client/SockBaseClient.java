@@ -12,9 +12,12 @@ import buffers.ResponseProtos.Entry;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static buffers.ResponseProtos.Response.ResponseType.*;
+
+
 class SockBaseClient {
 
-    public static void main (String args[]) throws Exception {
+    public static void main(String args[]) throws Exception {
         Socket serverSock = null;
         OutputStream out = null;
         InputStream in = null;
@@ -35,39 +38,133 @@ class SockBaseClient {
 
         // Ask user for username
         System.out.println("Please provide your name for the server.");
+
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         String strToSend = stdin.readLine();
-
         // Build the first request object just including the name
+
         Request op = Request.newBuilder()
                 .setOperationType(Request.OperationType.NAME)
                 .setName(strToSend).build();
         Response response;
-        try {
-            // connect to the server
-            serverSock = new Socket(host, port);
+        boolean flag = true;
+        int flag1 = 0;
+//            do {
 
-            // write to the server
-            out = serverSock.getOutputStream();
-            in = serverSock.getInputStream();
+        // connect to the server
+        serverSock = new Socket(host, port);
 
-            op.writeDelimitedTo(out);
+        // write to the server
+        out = serverSock.getOutputStream();
 
-            // read from the server
-            response = Response.parseDelimitedFrom(in);
+        in = serverSock.getInputStream();
 
-            // print the server response. 
-            System.out.println(response.getMessage());
+        op.writeDelimitedTo(out); //write requests
 
-            System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
+        do {
+            try {
+                // read from the server
+                response = Response.parseDelimitedFrom(in);
+                if(flag1 == 1) {
+                    BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
+                    String strToSend1 = stdin1.readLine();
+                    try {
+                        int choice = Integer.parseInt(strToSend1);
+                        // user entered an integer
+                        switch (choice) {
+                            case (1):
+                                op = Request.newBuilder()
+                                        .setOperationType(Request.OperationType.LEADER)
+                                        .setName(strToSend).build();
+                                op.writeDelimitedTo(out);
+                                break;
+                            case (2):
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (in != null)   in.close();
-            if (out != null)  out.close();
-            if (serverSock != null) serverSock.close();
-        }
+                                break;
+                            case (3):
+                                if (in != null) in.close();
+                                if (out != null) out.close();
+                                serverSock.close();
+                                flag = false;
+                                System.out.println("leaving game");
+                                System.exit(0);
+                                break;
+                            default:
+                                System.out.println("Not a valid choice try again");
+                                break;
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Not a number");
+                    }
+                }
+                // print the server response.
+
+                switch (response.getResponseType()) {
+                    case GREETING:
+                        if (flag1 == 0) {
+                            System.out.println(response.getMessage());
+                            System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
+                            flag1++;
+                        }
+                        break;
+                    case BYE:
+                        System.out.println("Game exit");
+                        if (in != null) in.close();
+                        if (out != null) out.close();
+                        serverSock.close();
+                        flag = false;
+                        System.exit(0);
+                        break;
+                    default:
+                        System.out.println();
+                        break;
+                }
+//                if(response.getResponseType() == Response.ResponseType.GREETING){
+//                    System.out.println(response.getMessage());
+//                }
+
+//                    System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
+//                BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
+//                String strToSend1 = stdin1.readLine();
+//                try {
+//                    int choice = Integer.parseInt(strToSend1);
+//                    // user entered an integer
+//                    switch (choice) {
+//                        case (1):
+//                            System.out.println(response.getMessage());
+//                            break;
+//                        case (2):
+//
+//                            break;
+//                        case (3):
+//                            if (in != null) in.close();
+//                            if (out != null) out.close();
+//                            serverSock.close();
+//                            flag = false;
+//                            System.exit(0);
+//                            break;
+//                        default:
+//                            System.out.println("Not a valid choice try again");
+//                            break;
+//                    }
+//                } catch (NumberFormatException e) {
+//                    System.out.println("Not a number");
+//                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+//            finally {
+//                if (in != null) in.close();
+//                if (out != null) out.close();
+//                if (serverSock != null) serverSock.close();
+//            }
+        } while (flag);
+//                if(flag1 == 0){
+//                    flag1++;
+//                }
+
     }
 }
 
