@@ -47,31 +47,39 @@ task runClient(type: JavaExec) {
 }
 
 task runTask1(type: JavaExec){
-  group 'Thread'
-  description 'Creates client socket sends a message to the server'
+  group 'server'
+  description 'Creates Server socket waits for messages'
 
   classpath = sourceSets.main.runtimeClasspath
+
+  main = 'taskone.ThreadedPoolServer'
   standardInput = System.in
 
-  main = 'taskone.Client'
-  standardInput = System.in
-
-  args 'localhost', 8000
-
+  // run with arguments e.g.: gradle runServer -Pport=9099 -q --console=plain
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }else{
+    args 8000
+  }
 }
 task runTask2(type: JavaExec){
-  group 'Thread'
+  group 'Server'
   description 'Creates client socket sends a message to the server'
 
   classpath = sourceSets.main.runtimeClasspath
   standardInput = System.in
 
-  main = 'taskone.Client'
+  main = 'taskone.ThreadedServer'
   standardInput = System.in
 
-  args 'localhost', 8000
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }else{
+    args 8000
+  }
 
 }
+
 task runTask3(type: JavaExec){
   group 'Thread'
   description 'Creates client socket sends a message to the server'
@@ -79,7 +87,7 @@ task runTask3(type: JavaExec){
   classpath = sourceSets.main.runtimeClasspath
   standardInput = System.in
 
-  main = 'taskone.Client'
+  main = 'taskone.ThreadedPoolServer'
   standardInput = System.in
 
   args 'localhost', 8000

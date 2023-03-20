@@ -20,8 +20,11 @@ public class Game {
     private int col; // columns in original, approx
     private int row; // rows in original and hidden
     private boolean won; // if the game is won or not
+    private int numberWon; //number of times user has won
     private List<String> files = new ArrayList<String>(); // list of files, each file has one image
-
+//    private HashMap<String,Integer> leaderboard = new HashMap<String,Integer>();
+//
+//    private ArrayList<leaderboard>
 
     public Game() {
         // you can of course add more or change this setup completely. You are totally free to also use just Strings in your Server class instead of this class
@@ -33,6 +36,13 @@ public class Game {
         files.add("board5.txt");
         files.add("board6.txt");
     }
+
+//    public HashMap<String, Integer> getLeaderboard() {
+//        return leaderboard;
+//    }
+//    public void setLeaderboard(String name, int score){
+//        leaderboard.put(name,score);
+//    }
 
     /**
      * Sets the won flag to true
@@ -192,7 +202,7 @@ public class Game {
 
     /**
      * Method that replaces a character, needed when a match was found, would need to be called twice
-     * You can of course also change it to get to rows and two cols if you like
+     * You can of course also change it to get two rows and two cols if you like
      *
      * @return String of the current hidden board
      */

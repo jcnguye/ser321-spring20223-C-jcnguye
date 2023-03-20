@@ -7,7 +7,7 @@ class StringList {
     
     List<String> strings = new ArrayList<String>();
 
-    public void add(String str) {
+    synchronized public void add(String str) {
         int pos = strings.indexOf(str);
         if (pos < 0) {
             strings.add(str);

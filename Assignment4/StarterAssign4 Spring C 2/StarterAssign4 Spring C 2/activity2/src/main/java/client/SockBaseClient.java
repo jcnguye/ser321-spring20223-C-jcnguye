@@ -46,7 +46,7 @@ class SockBaseClient {
         Request op = Request.newBuilder()
                 .setOperationType(Request.OperationType.NAME)
                 .setName(strToSend).build();
-        Response response;
+        Response response = null;
         boolean flag = true;
         int flag1 = 0;
 //            do {
@@ -64,41 +64,54 @@ class SockBaseClient {
         do {
             try {
                 // read from the server
-                response = Response.parseDelimitedFrom(in);
-                if(flag1 == 1) {
-                    BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
-                    String strToSend1 = stdin1.readLine();
-                    try {
-                        int choice = Integer.parseInt(strToSend1);
-                        // user entered an integer
-                        switch (choice) {
-                            case (1):
-                                op = Request.newBuilder()
-                                        .setOperationType(Request.OperationType.LEADER)
-                                        .setName(strToSend).build();
-                                op.writeDelimitedTo(out);
-                                break;
-                            case (2):
+                if (serverSock.isClosed()) {
+                    serverSock = new Socket(host, port);
+                }
 
-                                break;
-                            case (3):
-                                if (in != null) in.close();
-                                if (out != null) out.close();
-                                serverSock.close();
-                                flag = false;
-                                System.out.println("leaving game");
-                                System.exit(0);
-                                break;
-                            default:
-                                System.out.println("Not a valid choice try again");
-                                break;
-                        }
-                    } catch (NumberFormatException e) {
-                        System.out.println("Not a number");
+                if (flag1 != 0) {
+//                    BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
+//                    String strToSend1 = stdin1.readLine();
+                    // connect to the server
+//                    try {
+                    Scanner scanner = new Scanner(System.in);
+                    int choice = scanner.nextInt(); //should wait here why is it not waiting
+                    // write to the server
+                    out = serverSock.getOutputStream();
+                    // user entered an integer
+                    switch (choice) {
+                        case (1):
+                            op = Request.newBuilder()
+                                    .setOperationType(Request.OperationType.LEADER)
+                                    .setName(strToSend).build();
+                            op.writeDelimitedTo(out);
+                            break;
+                        case (2):
+                            break;
+                        case (3):
+                            op = Request.newBuilder().setOperationType(Request.OperationType.QUIT).build();
+                            op.writeDelimitedTo(out);
+                            System.out.println("leaving game");
+                            break;
+                        default:
+                            System.out.println("Not a valid choice try again");
+                            break;
                     }
+//                    } catch (NumberFormatException e) {
+//                        System.out.println("Not a number");
+//                    }
+
+
+                    in = serverSock.getInputStream();
+
                 }
                 // print the server response.
-
+//                if (op.hasOperationType() || response != null || response.getResponseType() != GREETING || response.getResponseType() != LEADER || response.getResponseType() != PLAY || response.getResponseType() != WON || response.getResponseType() != ERROR || response.getResponseType() != BYE) {
+//                    response = Response.parseDelimitedFrom(in);
+//                }
+                response = Response.parseDelimitedFrom(in);//wait response here?
+                if(response == null){
+                    System.out.println("response is empty or null");
+                }
                 switch (response.getResponseType()) {
                     case GREETING:
                         if (flag1 == 0) {
@@ -106,9 +119,19 @@ class SockBaseClient {
                             System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
                             flag1++;
                         }
+                        op = null;
+                        break;
+                    case LEADER:
+
+                            for (Entry lead : response.getLeaderList()) {
+                                System.out.println(lead.getName() + ": " + lead.getWins());
+                            }
+
+                        op = null;
                         break;
                     case BYE:
                         System.out.println("Game exit");
+                        System.out.println(response.getMessage());
                         if (in != null) in.close();
                         if (out != null) out.close();
                         serverSock.close();
@@ -119,6 +142,35 @@ class SockBaseClient {
                         System.out.println();
                         break;
                 }
+
+//                if(flag1 == 1) {
+//                    BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
+//                    String strToSend1 = stdin1.readLine();
+//                    try {
+//                        int choice = Integer.parseInt(strToSend1);
+//                        // user entered an integer
+//                        switch (choice) {
+//                            case (1):
+//                                op = Request.newBuilder()
+//                                        .setOperationType(Request.OperationType.LEADER)
+//                                        .setName(strToSend).build();
+//                                op.writeDelimitedTo(out);
+//                                break;
+//                            case (2):
+//                                break;
+//                            case (3):
+//                                op = Request.newBuilder().setOperationType(Request.OperationType.QUIT).build();
+//                                op.writeDelimitedTo(out);
+//                                System.out.println("leaving game");
+//                                break;
+//                            default:
+//                                System.out.println("Not a valid choice try again");
+//                                break;
+//                        }
+//                    } catch (NumberFormatException e) {
+//                        System.out.println("Not a number");
+//                    }
+//                }
 //                if(response.getResponseType() == Response.ResponseType.GREETING){
 //                    System.out.println(response.getMessage());
 //                }
@@ -154,12 +206,11 @@ class SockBaseClient {
 
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (in != null) in.close();
+                if (out != null) out.close();
+                if (serverSock != null) serverSock.close();
             }
-//            finally {
-//                if (in != null) in.close();
-//                if (out != null) out.close();
-//                if (serverSock != null) serverSock.close();
-//            }
         } while (flag);
 //                if(flag1 == 0){
 //                    flag1++;
