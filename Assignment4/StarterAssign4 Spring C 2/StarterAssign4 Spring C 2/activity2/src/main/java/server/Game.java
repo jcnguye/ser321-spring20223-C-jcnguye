@@ -37,13 +37,6 @@ public class Game {
         files.add("board6.txt");
     }
 
-//    public HashMap<String, Integer> getLeaderboard() {
-//        return leaderboard;
-//    }
-//    public void setLeaderboard(String name, int score){
-//        leaderboard.put(name,score);
-//    }
-
     /**
      * Sets the won flag to true
      *
@@ -56,6 +49,30 @@ public class Game {
 
     public boolean getWon() {
         return won;
+    }
+
+    /**
+     *
+     * @return the max column of the board
+     */
+    public int getCol() {
+        return col;
+    }
+
+    /**
+     *
+     * @return get the max row
+     */
+    public int getRow() {
+        return row;
+    }
+
+    public char[][] getOriginal() {
+        return original;
+    }
+
+    public char[][] getHidden() {
+        return hidden;
     }
 
     /**
@@ -115,6 +132,7 @@ public class Game {
                 }
             }
         } else {
+        //if loss
         }
     }
 
@@ -151,8 +169,6 @@ public class Game {
      *
      * @param tile1row
      * @param tile1col
-     * @param tile2row
-     * @param tile2col
      * @return String of board with the 1 tile showing
      */
     public String tempFlipWrongTiles(int tile1row, int tile1col) {
@@ -200,6 +216,17 @@ public class Game {
             return '?';
     }
 
+    public synchronized boolean matchFound(int hiddenRow, int hiddenCol,int originRow, int originCol) {
+        char hidTile = getTile(hiddenRow,hiddenCol);
+        char originTile = getTile(originRow,originCol);
+        if(hidTile == originTile){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+
     /**
      * Method that replaces a character, needed when a match was found, would need to be called twice
      * You can of course also change it to get two rows and two cols if you like
@@ -223,5 +250,22 @@ public class Game {
         if (equal) {
             setWon();
         }
+    }
+    public boolean checkWinCondition() {
+        boolean equal = true;
+        for (int r = 0; r < row; r++) {
+            for (int c = 0; c < col; c++) {
+                if (hidden[r][c] != original[r][c]) {
+                    equal = false;
+                    return false;
+                }else {
+                    return true;
+                }
+            }
+        }
+        return false;
+//        if (equal) {
+//            setWon();
+//        }
     }
 }

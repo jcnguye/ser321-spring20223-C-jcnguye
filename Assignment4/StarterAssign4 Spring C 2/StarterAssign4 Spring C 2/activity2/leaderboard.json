@@ -1,1 +1,18 @@
-{"key":[{"Won":0,"Login":1,"Name":"dave"},{"Won":0,"Login":1,"Name":"bob"}]}
+{
+  "dave": {
+    "Won": 0,
+    "Login": 32,
+    "Name": "dave"
+  },
+  "bob": {
+    "Won": 0,
+    "Login": 2,
+    "Name": "bob"
+  },
+
+  "ed": {
+    "Won": 0,
+    "Login": 10,
+    "Name": "ed"
+  }
+}

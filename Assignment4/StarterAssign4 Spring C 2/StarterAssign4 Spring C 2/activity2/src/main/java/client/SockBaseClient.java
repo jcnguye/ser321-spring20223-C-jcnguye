@@ -16,12 +16,29 @@ import static buffers.ResponseProtos.Response.ResponseType.*;
 
 
 class SockBaseClient {
+    private enum States {
+        // no game started
+        GameRunning,
+        // game is at menu
+        GameMenu,
+        // game fully initialized
+        GameViktory,
 
-    public static void main(String args[]) throws Exception {
+    }
+    private enum GuessState {
+        Guess1,
+        Guess2,
+    }
+
+    public static States gameState = States.GameMenu;
+    public static GuessState guessState = GuessState.Guess1;
+
+    public static void main(String[] args) throws Exception {
         Socket serverSock = null;
         OutputStream out = null;
         InputStream in = null;
         int port = 9099; // default port
+
 
         // Make sure two arguments are given
         if (args.length != 2) {
@@ -29,6 +46,7 @@ class SockBaseClient {
             System.exit(1);
         }
         String host = args[0];
+
         try {
             port = Integer.parseInt(args[1]);
         } catch (NumberFormatException nfe) {
@@ -60,58 +78,77 @@ class SockBaseClient {
         in = serverSock.getInputStream();
 
         op.writeDelimitedTo(out); //write requests
-
+        int tileRepeater = 0;
+        String tile = "";
         do {
             try {
                 // read from the server
-                if (serverSock.isClosed()) {
-                    serverSock = new Socket(host, port);
-                }
+//                if (serverSock.isClosed()) {
+//                    serverSock = new Socket(host, port);
+//                }
 
                 if (flag1 != 0) {
 //                    BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
 //                    String strToSend1 = stdin1.readLine();
                     // connect to the server
 //                    try {
-                    Scanner scanner = new Scanner(System.in);
-                    int choice = scanner.nextInt(); //should wait here why is it not waiting
-                    // write to the server
-                    out = serverSock.getOutputStream();
-                    // user entered an integer
-                    switch (choice) {
-                        case (1):
-                            op = Request.newBuilder()
-                                    .setOperationType(Request.OperationType.LEADER)
-                                    .setName(strToSend).build();
-                            op.writeDelimitedTo(out);
-                            break;
-                        case (2):
-                            break;
-                        case (3):
-                            op = Request.newBuilder().setOperationType(Request.OperationType.QUIT).build();
-                            op.writeDelimitedTo(out);
-                            System.out.println("leaving game");
-                            break;
-                        default:
-                            System.out.println("Not a valid choice try again");
-                            break;
+                    if (gameState == States.GameMenu) {
+                        Scanner scanner = new Scanner(System.in);
+                        int choice = scanner.nextInt(); //should wait here why is it not waiting
+                        // write to the server
+//                    out = serverSock.getOutputStream();
+                        // user entered an integer
+                        switch (choice) {
+                            case (1):
+//                            op = Request.newBuilder()
+//                                    .setOperationType(Request.OperationType.LEADER).build();
+//                            op.writeDelimitedTo(out);
+                                Request op1 = Request.newBuilder()
+                                        .setOperationType(Request.OperationType.LEADER)
+                                        .setName(strToSend).build();
+                                op1.writeDelimitedTo(out);
+                                break;
+                            case (2):
+                                op = Request.newBuilder().setOperationType(Request.OperationType.NEW).build();
+                                op.writeDelimitedTo(out);
+                                System.out.println("Game start");
+                                break;
+                            case (3):
+                                op = Request.newBuilder().setOperationType(Request.OperationType.QUIT).build();
+                                op.writeDelimitedTo(out);
+                                System.out.println("leaving game");
+                                break;
+                            default:
+                                System.out.println("Not a valid choice try again");
+                                break;
+                        }
                     }
-//                    } catch (NumberFormatException e) {
-//                        System.out.println("Not a number");
-//                    }
-
-
-                    in = serverSock.getInputStream();
 
                 }
-                // print the server response.
-//                if (op.hasOperationType() || response != null || response.getResponseType() != GREETING || response.getResponseType() != LEADER || response.getResponseType() != PLAY || response.getResponseType() != WON || response.getResponseType() != ERROR || response.getResponseType() != BYE) {
-//                    response = Response.parseDelimitedFrom(in);
-//                }
+                    if(gameState == States.GameRunning){
+                        Scanner scanner = new Scanner(System.in);
+                        System.out.println("Enter input");
+                        String gameInput = scanner.nextLine();
+                        System.out.println("In game state");
+                        if(guessState == GuessState.Guess1){
+                            op = Request.newBuilder().setOperationType(Request.OperationType.TILE1).setTile(gameInput).build();
+                            op.writeDelimitedTo(out);
+                            guessState = GuessState.Guess2;
+                        }else if (guessState == GuessState.Guess2){
+                            op = Request.newBuilder().setOperationType(Request.OperationType.TILE2).setTile(gameInput).build();
+                            op.writeDelimitedTo(out);
+
+                            guessState = GuessState.Guess1;
+                        }
+                    }
                 response = Response.parseDelimitedFrom(in);//wait response here?
-                if(response == null){
+
+                if (response == null || !response.hasResponseType()) {
+
                     System.out.println("response is empty or null");
+
                 }
+
                 switch (response.getResponseType()) {
                     case GREETING:
                         if (flag1 == 0) {
@@ -122,12 +159,18 @@ class SockBaseClient {
                         op = null;
                         break;
                     case LEADER:
-
-                            for (Entry lead : response.getLeaderList()) {
-                                System.out.println(lead.getName() + ": " + lead.getWins());
-                            }
-
+                        for (Entry lead : response.getLeaderList()) {
+                            System.out.println(lead.getName() + ": " + lead.getLogins());
+                        }
                         op = null;
+                        break;
+                    case PLAY:
+                        System.out.println("Player is playing");
+                        System.out.println("Type enter to continue");
+                        response.getBoard();
+                        System.out.println(response.getBoard());
+                        System.out.println(response.getMessage());
+                        gameState = States.GameRunning;
                         break;
                     case BYE:
                         System.out.println("Game exit");
@@ -138,83 +181,17 @@ class SockBaseClient {
                         flag = false;
                         System.exit(0);
                         break;
+                    case ERROR:
+                        System.out.println(response.getMessage());
+                        guessState = GuessState.Guess1;
                     default:
                         System.out.println();
                         break;
                 }
-
-//                if(flag1 == 1) {
-//                    BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
-//                    String strToSend1 = stdin1.readLine();
-//                    try {
-//                        int choice = Integer.parseInt(strToSend1);
-//                        // user entered an integer
-//                        switch (choice) {
-//                            case (1):
-//                                op = Request.newBuilder()
-//                                        .setOperationType(Request.OperationType.LEADER)
-//                                        .setName(strToSend).build();
-//                                op.writeDelimitedTo(out);
-//                                break;
-//                            case (2):
-//                                break;
-//                            case (3):
-//                                op = Request.newBuilder().setOperationType(Request.OperationType.QUIT).build();
-//                                op.writeDelimitedTo(out);
-//                                System.out.println("leaving game");
-//                                break;
-//                            default:
-//                                System.out.println("Not a valid choice try again");
-//                                break;
-//                        }
-//                    } catch (NumberFormatException e) {
-//                        System.out.println("Not a number");
-//                    }
-//                }
-//                if(response.getResponseType() == Response.ResponseType.GREETING){
-//                    System.out.println(response.getMessage());
-//                }
-
-//                    System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
-//                BufferedReader stdin1 = new BufferedReader(new InputStreamReader(System.in));
-//                String strToSend1 = stdin1.readLine();
-//                try {
-//                    int choice = Integer.parseInt(strToSend1);
-//                    // user entered an integer
-//                    switch (choice) {
-//                        case (1):
-//                            System.out.println(response.getMessage());
-//                            break;
-//                        case (2):
-//
-//                            break;
-//                        case (3):
-//                            if (in != null) in.close();
-//                            if (out != null) out.close();
-//                            serverSock.close();
-//                            flag = false;
-//                            System.exit(0);
-//                            break;
-//                        default:
-//                            System.out.println("Not a valid choice try again");
-//                            break;
-//                    }
-//                } catch (NumberFormatException e) {
-//                    System.out.println("Not a number");
-//                }
-
-
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                if (in != null) in.close();
-                if (out != null) out.close();
-                if (serverSock != null) serverSock.close();
             }
         } while (flag);
-//                if(flag1 == 0){
-//                    flag1++;
-//                }
 
     }
 }

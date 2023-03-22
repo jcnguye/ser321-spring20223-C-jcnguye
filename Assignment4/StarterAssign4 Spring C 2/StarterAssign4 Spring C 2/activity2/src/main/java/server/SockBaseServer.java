@@ -26,8 +26,8 @@ class SockBaseServer {
     Socket clientSocket = null;
     int port = 9099; // default port
     Game game;
-    HashMap<String, Player> leaderTracker; //keeps track of all new users and existing ones
-    ArrayList<Player> list;
+
+    JSONObject leaderBoard = new JSONObject(); //keeps track of all new users and existing ones
 
 
     public SockBaseServer(Socket sock, Game game) {
@@ -41,18 +41,6 @@ class SockBaseServer {
         }
     }
 
-    public SockBaseServer(Socket sock, Game game, ArrayList<Player> list, HashMap<String, Player> leaderTracker) {
-        this.clientSocket = sock;
-        this.game = game;
-        this.list = list;
-        this.leaderTracker = leaderTracker;
-        try {
-            in = clientSocket.getInputStream();
-            out = clientSocket.getOutputStream();
-        } catch (Exception e) {
-            System.out.println("Error in constructor: " + e);
-        }
-    }
 
     public JSONObject readJsonLeaderFile() {
         JSONObject JSON = new JSONObject();
@@ -69,108 +57,6 @@ class SockBaseServer {
         return JSON;
     }
 
-    public void writeUpdateJsonLeaderFile(ArrayList<Player> list) {
-        JSONObject readJson = readJsonLeaderFile();
-//        int size = readJson.append()
-        try (FileWriter file = new FileWriter("leaderboard.json")) {
-            JSONObject newList = new JSONObject();
-            JSONArray list1 = new JSONArray();
-//
-//            JSONObject newPlayer = new JSONObject();
-//            newPlayer.put("Won", player.getWins());
-//            newPlayer.put("Login", player.getLogin());
-//            newPlayer.put("Name", player.getName());
-
-            for (Player player : list) {
-                System.out.println("test");
-
-                JSONObject newPlayer = new JSONObject();
-                newPlayer.put("Won", player.getWins());
-                newPlayer.put("Login", player.getLogin());
-                newPlayer.put("Name", player.getName());
-                list1.put(newPlayer);
-
-//                String name = readJson.getString("Name");//crashed here
-//                String name1 = newPlayer.getString("Name");
-//                if(readJson.getString("Name").equals(newPlayer.getString("Name"))){
-//                    newPlayer.put("Won",player.getWins());
-//                    newPlayer.put("Name",player.getName());
-//                    newPlayer.put("Login",player.getLogin());
-//                }
-
-            }
-            newList.put("key", list1);
-            file.write(newList.toString());
-            System.out.println("Successfully wrote JSON object to file.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void test1UpdateJson(int won, int login, String name) {
-        JSONObject readJson = readJsonLeaderFile();
-//        int size = readJson.append()
-        try (FileWriter file = new FileWriter("leaderboard.json")) {
-            JSONObject newList = new JSONObject();
-            JSONArray list1 = new JSONArray();
-//
-            JSONObject newPlayer = new JSONObject();
-            newPlayer.put("Won", won);
-            newPlayer.put("Login", login);
-            newPlayer.put("Name", name);
-            readJson.accumulate("key", newPlayer);
-            file.write(newList.toString());
-
-//
-//            for (Player player : list) {
-//                System.out.println("test");
-//
-//                JSONObject newPlayer = new JSONObject();
-//                newPlayer.put("Won", player.getWins());
-//                newPlayer.put("Login", player.getLogin());
-//                newPlayer.put("Name", player.getName());
-//                list1.put(newPlayer);
-//
-////                String name = readJson.getString("Name");//crashed here
-////                String name1 = newPlayer.getString("Name");
-////                if(readJson.getString("Name").equals(newPlayer.getString("Name"))){
-////                    newPlayer.put("Won",player.getWins());
-////                    newPlayer.put("Name",player.getName());
-////                    newPlayer.put("Login",player.getLogin());
-////                }
-//
-//            }
-//            newList.put("key", list1);
-//            file.write(newList.toString());
-//            System.out.println("Successfully wrote JSON object to file.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void writeToEmptyJsonLeaderFile(ArrayList<Player> list) {
-        if (isJsonFileEmpty()) {
-            try (FileWriter file = new FileWriter("leaderboard.json")) {
-                JSONObject newList = new JSONObject();
-                JSONArray list1 = new JSONArray();
-//                            ArrayList<JSONObject> list1 = new ArrayList<>();
-                for (Player player : list) {
-                    System.out.println("test");
-                    JSONObject newPlayer = new JSONObject();
-                    newPlayer.put("Name", player.getName());
-                    newPlayer.put("Won", player.getWins());
-                    newPlayer.put("Login", player.getLogin());
-                    list1.put(newPlayer);
-                }
-                newList.put("key", list1);
-                file.write(newList.toString());
-                System.out.println("Successfully wrote JSON object to file.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public boolean isJsonFileEmpty() {
 
         File file = new File("leaderboard.json");
@@ -179,6 +65,38 @@ class SockBaseServer {
 
     }
 
+    public void writeToJson(String name, int wins, int logins) {
+        JSONObject playerObj = new JSONObject();
+
+        if (!isJsonFileEmpty()) {
+            try {
+                playerObj.put("Name", name);
+                playerObj.put("Won", wins);
+                playerObj.put("Login", logins);
+                leaderBoard.put(name, playerObj);
+                FileWriter file = new FileWriter("leaderboard.json");
+                file.write(leaderBoard.toString());
+                file.flush();
+            } catch (IOException E) {
+                E.printStackTrace();
+            }
+            System.out.println("Successfully wrote JSON object to file.");
+        } else {//is empty
+            playerObj.put("Name", name);
+            playerObj.put("Won", wins);
+            playerObj.put("Login", logins);
+            leaderBoard.put(name, playerObj);
+            try {
+                FileWriter file = new FileWriter("leaderboard.json");
+                file.write(leaderBoard.toString());
+                file.flush();
+            } catch (IOException E) {
+                E.printStackTrace();
+            }
+
+        }
+
+    }
 
     // Handles the communication right now it just accepts one input and then is done you should make sure the server stays open
     // can handle multiple requests and does not crash when the server crashes
@@ -187,208 +105,202 @@ class SockBaseServer {
         boolean flag = true;
         String name = "";
         System.out.println("Ready...");
-        try {
-            // read the proto object and put into new objct
-            Request op = Request.parseDelimitedFrom(in);
-            String result = null;
+        Response response = null;
+        int row1 = 0;
+        int col1 = 0;
+        int row2 = 0;
+        int col2 = 0;
+        do {
+            try {
+                // read the proto object and put into new objct
+                Request op = Request.parseDelimitedFrom(in);
 
+                int flag1 = 0;
+                if (!isJsonFileEmpty()) {//if not empty
+                    JSONObject read = readJsonLeaderFile();
+                    leaderBoard = read;
+                }
 
-            // if the operation is NAME (so the beginning then say there is a commention and greet the client)
-//            if (op.getOperationType() == Request.OperationType.NAME) {
-//                // get name from proto object
-//                name = op.getName();
-//                // writing a connect message to the log with name and CONNENCT
-//                writeToLog(name, Message.CONNECT);
-//                System.out.println("Got a connection and a name: " + name);
-//                Response response = Response.newBuilder()
-//                .setResponseType(Response.ResponseType.GREETING)
-//                .setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ")
-//                .build();
-//                response.writeDelimitedTo(out);
-//            }
-            int flag1 = 0;
-            switch (op.getOperationType()) {
-                case NAME:
-                    // get name from proto object
-                    name = op.getName();
-                    // writing a connect message to the log with name and CONNENCT
-                    writeToLog(name, Message.CONNECT);
-                    System.out.println("Got a connection and a name: " + name);
-                    Response response = Response.newBuilder()
-                            .setResponseType(Response.ResponseType.GREETING)
-                            .setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ")
-                            .build();
-                    response.writeDelimitedTo(out);
-                    //sets the name, number of logins, and number of wins to json file
-//                        leaderboard.put();
-
-                    if (isJsonFileEmpty()) {
-                        Player player = new Player(name, 0, 1);
-                        list.add(player);
-                        leaderTracker.put(name, player);
-                        writeToEmptyJsonLeaderFile(list);
-                    } else if (!leaderTracker.containsKey(name)) { //if does not contain in leader is a new player
-                        Player player = new Player(name, 0, 1);
-                        list.add(player);
-                        leaderTracker.put(name, player);
-                        writeUpdateJsonLeaderFile(list);
-                    }
-//                        if(leaderTracker.isEmpty()){ //is when its empty
-//                            Player player = new Player(name,0,1);
-//                            list.add(player);
-//                            leaderTracker.put(name,player);
-//                            writeToEmptyJsonLeaderFile(list);
-//                        }
-                    else {//updates leader board if they exist
-                        JSONObject readJson = readJsonLeaderFile();
-                        Player player = new Player(name, leaderTracker.get(name).getWins(), leaderTracker.get(name).getLogin());
-                        player.incrementLogin();
-                        leaderTracker.put(name, player); //updates hashmap
-                        ArrayList<Player> L1 = new ArrayList<>();
-                        for (Player player1 : list) {
-                            if (Objects.equals(player1.getName(), leaderTracker.get(name).getName())) {
-                                L1.add(player);
-                            } else {
-                                L1.add(player1);
-                            }
-                        }
-                        list = L1; //updates the array list
-                        writeUpdateJsonLeaderFile(list);
-                    }
-
-
-//                        if(!leaderTracker.containsKey(name)){
-//                            Player player = new Player(name,0,1);
-//
-//                            list.add(player);
-//                            leaderTracker.put(name,player);
-//                            writeJsonLeaderFile(list);
-////                            leaderboard.put();
-////                            leaderboard.put(name,leaderTracker.get(name));
-//                        }else{//if player already exists
-//                            Player player = new Player(name,leaderTracker.get(name).getWins(),leaderTracker.get(name).getLogin());
-//                            player.incrementLogin();
-//                            leaderTracker.put(name,leaderTracker.get(name)); //updates hashmap
-//
-//                            writeJsonLeaderFile(list);
-//
-//                            System.out.println("Name exist here");
-//                        }
-
-//                        else{
-//                            JSONObject name1 = new JSONObject();
-//                            name1.put("won",0);
-//                            name1.put("login",0);
-//                            leaderboard.put(name,name1);
-//                            leaderTracker.put(name,name1);
-//                        }
-//                        writeJsonFile();
-//                        JSONObject json = readJsonLeaderFile();
-//                        try (FileWriter file = new FileWriter("leaderboard.json")) {
-//                            JSONObject newList = new JSONObject();
-//                            JSONArray list1 = new JSONArray();
-////                            ArrayList<JSONObject> list1 = new ArrayList<>();
-//                            for(Player player: list){
-//                                System.out.println("test");
-//
-//                                JSONObject newPlayer = new JSONObject();
-//                                newPlayer.put("Won",player.getWins());
-//                                newPlayer.put("Name",player.getName());
-//
-//                                newPlayer.put("Login",player.getLogin());
-//
-//                                if(leaderTracker.containsKey(player.getName())){
-//
-//                                }
-//                                list1.put(newPlayer);
-//                            }
-//                            newList.put("key",list1);
-//                            file.write(newList.toString());
-//                            System.out.println("Successfully wrote JSON object to file.");
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-                    break;
-                case NEW:
-                    game.newGame(); // starting a new game
-                    // Example on how you could build a simple response for PLAY as answer to NEW
-                    Response response2 = Response.newBuilder()
-                            .setResponseType(Response.ResponseType.PLAY)
-                            .setBoard(game.getBoard()) // gets the hidden board
-                            .setEval(false)
-                            .setSecond(false)
-                            .build();
-                    System.out.println("\n\nExample response:");
-                    System.out.println("Type: " + response2.getResponseType());
-                    System.out.println("Board: \n" + response2.getBoard());
-                    System.out.println("Eval: \n" + response2.getEval());
-                    System.out.println("Second: \n" + response2.getSecond());
-                    break;
-                case QUIT:
-                    Response response3 = Response.newBuilder()
-                            .setResponseType(Response.ResponseType.BYE)
-                            .setMessage("Leaving menu good bye").build();
-                    response3.writeDelimitedTo(out);
-                    break;
-                case LEADER:
-                    JSONObject readJson = null;
-                    JSONArray jsonArray = null;
-                    if (!isJsonFileEmpty()) {
-                        readJson = readJsonLeaderFile();
-                        jsonArray = readJson.getJSONArray("key");
-                    }
-                    int login;
-                    int wins;
-                    String name1 = "";
-                    for (Object jsonObj : jsonArray) {
-//                        JSONObject arrObj = (JSONObject) jsonObj;
-//                        login = arrObj.getInt("Login");
-//                        wins = arrObj.getInt("Won");
-//                        login = arrObj.getString("na")
-                    }
-//                    readJson.
-                    // Creating Leader response
-
-                    Response.Builder res = Response.newBuilder()
-                            .setResponseType(Response.ResponseType.LEADER);
-
-                    // building an Entry for the leaderboard
-                    Entry leader = null;
-                    for (Object jsonObj : jsonArray) {
-                        JSONObject arrObj = (JSONObject) jsonObj;
-                        leader = Entry.newBuilder()
-                                .setName(arrObj.getString("Name"))
-                                .setWins(arrObj.getInt("Won"))
-                                .setLogins(arrObj.getInt("Login"))
+                switch (op.getOperationType()) {
+                    case NAME:
+                        // get name from proto object
+                        name = op.getName();
+                        // writing a connect message to the log with name and CONNENCT
+//                        writeToLog(name, Message.CONNECT);
+                        System.out.println("Got a connection and a name: " + name);
+                        response = Response.newBuilder()
+                                .setResponseType(Response.ResponseType.GREETING)
+                                .setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ")
                                 .build();
-                        res.addLeader(leader);
-                    }
-//                    for (Entry lead : leader.getLeaderList()) {
-//                        System.out.println(lead.getName() + ": " + lead.getWins());
-//                    }
-                    Response res1 = res.build();
-                    for (Entry lead : res1.getLeaderList()) {
-                        System.out.println(lead.getName() + ": " + lead.getWins());
-                    }
-                    res1.writeDelimitedTo(out);
-//                            .setResponseType(res.getResponseType())
-//                            .setLeader
-//                            .build();
-//                    res1.writeDelimitedTo(out);
+                        response.writeDelimitedTo(out);
+//                        if (isJsonFileEmpty()) {
+//                            Player player = new Player(name, 0, 1);
+//                            writeToJson(player.getName(), player.getWins(), player.getLogin());
+//                        } else if (!leaderBoard.has(name)) { //if does not contain in leader is a new player
+//                            Player player = new Player(name, 0, 1);
+//                            writeToJson(player.getName(), player.getWins(), player.getLogin());
+//                        } else {//updates leader board if they exist
+//                            String name1 = leaderBoard.getJSONObject(name).getString("Name");
+//                            int won = leaderBoard.getJSONObject(name).getInt("Won");
+//                            int login = leaderBoard.getJSONObject(name).getInt("Login");
+//                            login++;
+//                            writeToJson(name1, won, login);
+//                        }
+                        break;
+                    case NEW:
+                        game.newGame(); // starting a new game
+                        // Example on how you could build a simple response for PLAY as answer to NEW
+                        response = Response.newBuilder()
+                                .setResponseType(Response.ResponseType.PLAY)
+                                .setBoard(game.getBoard()) // gets the hidden board
+                                .setEval(false)
+                                .setSecond(false)
+                                .build();
+                        System.out.println("\n\nExample response:");
+                        System.out.println("Type: " + response.getResponseType());
+                        System.out.println("Board: \n" + response.getBoard());
+                        System.out.println("Original Board: \n" + game.showBoard());
+                        System.out.println("Eval: \n" + response.getEval());
+                        System.out.println("Second: \n" + response.getSecond());
+                        response.writeDelimitedTo(out);
+                        break;
+                    case TILE1:
+                        game.showBoard();
+                        String tile = op.getTile();
+                        row1 = tile.charAt(0) - 'a' + 1;
+//                        col1 = (tile.charAt(1) - '0') * 2 - 1;
+                        switch (tile.charAt(1)){
+                            case ('1'):
+                                col1 = 2;
+                            break;
+                            case ('2'):
+                                col1 = 4;
+                                break;
+                            case ('3'):
+                                col1 = 6;
+                                break;
+                            case ('4'):
+                                col1 = 8;
+                                break;
+                            default:
+                                System.out.println("Invalid column number\n");
+                                response = Response.newBuilder()
+                                        .setResponseType(ERROR)
+                                        .setMessage("Invalid column number\n")
+                                        .build();
+                                response.writeDelimitedTo(out);
+                                break;
+                        }
+                        System.out.println("row1: "+ row1);
+                        System.out.println("Col: "+ col1);
+                        if (!tile.matches("[a-d][1-4]")) {
+                            System.out.println("Incorrect format");
+                        }else if (tile.length() != 2){
+                            System.out.println("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n");
+                            response = Response.newBuilder()
+                                    .setResponseType(ERROR)
+                                    .setMessage("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n")
+                                    .build();
+                            response.writeDelimitedTo(out);
+                        }
+                        else if (row1 < 1 || row1 > game.getRow() || col1 < 2 || col1 > game.getCol()) {
+                            System.out.println("Not with in bounds\n");
+                            response = Response.newBuilder()
+                                    .setResponseType(ERROR)
+                                    .setMessage("Not with in bounds\n")
+                                    .build();
+                            response.writeDelimitedTo(out);
+                        }
+                        else if (row1 > 1 || row1 < game.getRow() || col1 > 2 || col1 < game.getCol()){
+                            System.out.println("tile location "+ game.getTile(row1,col1));
+                            System.out.println("Wrong tile temp flip: "+ game.tempFlipWrongTiles(row1,col1));
+                            response = Response.newBuilder()
+                                    .setResponseType(Response.ResponseType.PLAY)
+                                    .setBoard(game.tempFlipWrongTiles(row1,col1)) // gets the hidden board
+                                    .setEval(false)
+                                    .setSecond(false)
+                                    .setMessage(String.valueOf(game.getTile(row1,col1)))
+                                    .build();
+                            response.writeDelimitedTo(out);
+                        }else{
+                            System.out.println("Options not recognize\n");
+                            response = Response.newBuilder()
+                                    .setResponseType(ERROR)
+                                    .setMessage("Options not recognize\n")
+                                    .build();
+                            response.writeDelimitedTo(out);
+                        }
 
+                        break;
+                    case TILE2:
+                        boolean win1 = game.checkWinCondition();
+                        response = Response.newBuilder()
+                                .setResponseType(Response.ResponseType.PLAY)
+                                .setBoard(game.getBoard()) // gets the hidden board
+                                .setEval(true)
+                                .setSecond(false)
+                                .build();
+                        response.writeDelimitedTo(out);
+                        break;
+                    case QUIT:
+                        Response response3 = Response.newBuilder()
+                                .setResponseType(Response.ResponseType.BYE)
+                                .setMessage("Leaving menu good bye").build();
+                        response3.writeDelimitedTo(out);
+                        flag = false;
+                        break;
+                    case LEADER:
 
-                    break;
+                        Response.Builder res = Response.newBuilder()
+                                .setResponseType(Response.ResponseType.LEADER);
 
-                default:
-                    System.out.println();
-                    break;
+                        // building an Entry for the leaderboard
+                        Entry leader = null;
+
+                        for (String player : leaderBoard.keySet()) {
+                            JSONObject playerObj = leaderBoard.getJSONObject(player);
+                            String namePlayer = playerObj.getString("Name");
+                            int win = playerObj.getInt("Won");
+                            int login1 = playerObj.getInt("Login");
+                            System.out.println(name + " - Won: " + win + " - Login: " + login1);
+                            leader = Entry.newBuilder()
+                                    .setName(namePlayer)
+                                    .setWins(win)
+                                    .setLogins(login1)
+                                    .build();
+                            res.addLeader(leader);
+
+                        }
+                        Response res1 = res.build();
+                        res1.writeDelimitedTo(out);
+                        break;
+                    default:
+                        System.out.println();
+                        break;
+                }
+
+            } catch (Exception ex) {
+
+                if (out != null){
+                    out.close();
+                    System.out.println("Output stream close");
+                }
+                if (in != null) {
+                    in.close();
+                    System.out.println("Input stream close");
+                }
+                if (clientSocket != null) {
+                    clientSocket.close();
+                    System.out.println("Client socket close");
+                }
+                break;
             }
+        } while (flag);
+        // Example how to start a new game and how to build a response with the board which you could then send to the server
+        // LINES between ====== are just an example for Protobuf and how to work with the differnt types. They DO NOT
+        // belong into this code as is!
 
-            // Example how to start a new game and how to build a response with the board which you could then send to the server
-            // LINES between ====== are just an example for Protobuf and how to work with the differnt types. They DO NOT
-            // belong into this code as is!
-
-            // ========= Example start
+        // ========= Example start
 //            game.newGame(); // starting a new game
 //
 //            // Example on how you could build a simple response for PLAY as answer to NEW
@@ -416,7 +328,7 @@ class SockBaseServer {
 //            System.out.println(game.getBoard()); // shows the now not hidden tiles
 
 
-            // On the client side you would receive a Response object which is the same as the one in line 73, so now you could read the fields
+        // On the client side you would receive a Response object which is the same as the one in line 73, so now you could read the fields
 //            System.out.println("\n\nExample response:");
 //            System.out.println("Type: " + response2.getResponseType());
 //            System.out.println("Board: \n" + response2.getBoard());
@@ -455,15 +367,14 @@ class SockBaseServer {
 //                System.out.println(lead.getName() + ": " + lead.getWins());
 //            }
 
-            // ========= Example end
+        // ========= Example end
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            if (out != null) out.close();
-            if (in != null) in.close();
-            if (clientSocket != null) clientSocket.close();
-        }
+
+//        finally {
+//            if (out != null) out.close();
+//            if (in != null) in.close();
+//            if (clientSocket != null) clientSocket.close();
+//        }
     }
 
 
@@ -526,8 +437,6 @@ class SockBaseServer {
 
     public static void main(String args[]) throws Exception {
         Game game = new Game();
-        ArrayList<Player> list = new ArrayList<>();
-        HashMap<String, Player> tracker = new HashMap<>();
         if (args.length != 2) {
             System.out.println("Expected arguments: <port(int)> <delay(int)>");
             System.exit(1);
@@ -556,7 +465,8 @@ class SockBaseServer {
             System.out.println("Wait for connection");
             clientSocket = serv.accept();
             System.out.println("Connection made");
-            SockBaseServer server = new SockBaseServer(clientSocket, game, list, tracker);
+//            SockBaseServer server = new SockBaseServer(clientSocket, game, list, tracker);
+            SockBaseServer server = new SockBaseServer(clientSocket, game);
             server.start();
         }
 
