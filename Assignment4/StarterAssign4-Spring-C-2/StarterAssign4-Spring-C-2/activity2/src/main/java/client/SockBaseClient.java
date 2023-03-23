@@ -23,17 +23,13 @@ class SockBaseClient {
         // game is at menu
         GameMenu,
         // game fully initialized
-        GameViktory,
 
     }
 
-    private enum GuessState {
-        Guess1,
-        Guess2,
-    }
-
+    static boolean second = false;
     public static States gameState = States.GameMenu;
-    public static GuessState guessState = GuessState.Guess1;
+    public static Player player;
+
 
     public static void main(String[] args) throws Exception {
         Socket serverSock = null;
@@ -135,22 +131,20 @@ class SockBaseClient {
                             System.out.println("Enter game input\n");
                             gameInput = scanner.nextLine();
                             if((!gameInput.matches("[a-d][1-4]")) || gameInput.length() != 2){
-
                                 System.out.println("Invalid game input\n");
                                 System.out.println("Try again\n");
+                                System.out.println("Format is [letter,number] \n example, a1, b2");
                             }else {
                                 flag2 = true;
                             }
-                        }while (flag2==false);
+                        }while (!flag2);
                         System.out.println("In game state");
-                        if(guessState == GuessState.Guess1){
+                        if(second == false){
                             op = Request.newBuilder().setOperationType(Request.OperationType.TILE1).setTile(gameInput).build();
                             op.writeDelimitedTo(out);
-                            guessState = GuessState.Guess2;
-                        }else if (guessState == GuessState.Guess2){
+                        }else if (second == true){
                             op = Request.newBuilder().setOperationType(Request.OperationType.TILE2).setTile(gameInput).build();
                             op.writeDelimitedTo(out);
-                            guessState = GuessState.Guess1;
                         }
                         response = Response.parseDelimitedFrom(in);//wait response here?
                     }
@@ -181,10 +175,19 @@ class SockBaseClient {
                         break;
                     case PLAY:
                         System.out.println("Player is playing");
-                        System.out.println("Type enter to continue");
-//                        response.getBoard();
-                        System.out.println(response.getBoard());
-                        System.out.println(response.getMessage());
+//                        System.out.println(response.getBoard());
+                        if(response.hasSecond()){
+                            second = response.getSecond();
+                        }
+                        if(response.hasBoard()){
+                            System.out.println(response.getBoard());
+                        }
+                        if(response.hasFlippedBoard()){
+                            System.out.println(response.getFlippedBoard());
+                        }
+                        if(response.hasMessage()){
+                            System.out.println(response.getMessage());
+                        }
                         gameState = States.GameRunning;
                         break;
                     case BYE:
@@ -196,9 +199,12 @@ class SockBaseClient {
                         flag = false;
                         System.exit(0);
                         break;
+                    case WON:
+                        System.out.println("HOOORAY YOU WON!!!");
+                        gameState = States.GameMenu;
+                        break;
                     case ERROR:
                         System.out.println(response.getMessage());
-                        guessState = GuessState.Guess1;
                     default:
                         System.out.println();
                         break;

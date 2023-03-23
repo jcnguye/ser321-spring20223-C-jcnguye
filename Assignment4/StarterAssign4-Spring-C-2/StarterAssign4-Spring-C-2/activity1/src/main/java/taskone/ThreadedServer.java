@@ -43,35 +43,8 @@ class ThreadedServer {
 
             Socket sock = server.accept();
             Performer performer = new Performer(sock,strings);
-//            Performer performer = new Performer(sock, strings);
-//            performer.doPerform();
-//            performer.start();
             Thread thread = new Thread(performer);
             thread.start();
-
-
-//            Socket sock = server.accept();
-//            Performer performer = new Performer(sock,strings);
-////            Executor pool = Executors.newCachedThreadPool();
-//            Executor pool = (Executor) Executors.callable(performer);
-////            pool.execute(new Performer(sock, strings));
-//            pool.execute(performer);
-//            performer.run();
-
-//            Executor pool = Executors.newFixedThreadPool(3);
-//            for (int i=0; i < 3; i++) {
-//                System.out.println("Accepting a Request...");
-//
-//                pool.execute(new Performer(sock, strings));
-//            }
-
-
-//            try {
-//                System.out.println("close socket off client ");
-//                sock.close();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
         }
     }
 }

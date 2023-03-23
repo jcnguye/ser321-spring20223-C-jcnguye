@@ -90,7 +90,11 @@ task runTask3(type: JavaExec){
   main = 'taskone.ThreadPoolServer'
   standardInput = System.in
 
-  args 'localhost', 8000
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }else{
+    args 8000
+  }
 
 }
 

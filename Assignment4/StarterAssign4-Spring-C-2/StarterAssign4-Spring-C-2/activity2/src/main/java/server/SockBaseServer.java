@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+import client.Player;
 import org.json.*;
 
 import java.lang.*;
@@ -135,11 +136,12 @@ class SockBaseServer {
         boolean flag = true;
         String name = "";
         System.out.println("Ready...");
-        Response response = null;
         int row1 = 0;
         int col1 = 0;
         int row2 = 0;
         int col2 = 0;
+        Response.Builder res = null;
+        Response response = null;
         do {
             try {
                 // read the proto object and put into new objct
@@ -155,27 +157,56 @@ class SockBaseServer {
                     case NAME:
                         // get name from proto object
                         name = op.getName();
+                        int won = 0;
+                        int login = 0;
                         // writing a connect message to the log with name and CONNENCT
 //                        writeToLog(name, Message.CONNECT);
                         System.out.println("Got a connection and a name: " + name);
-                        response = Response.newBuilder()
-                                .setResponseType(Response.ResponseType.GREETING)
-                                .setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ")
-                                .build();
+                         res = Response.newBuilder()
+                                .setResponseType(GREETING);
+                       Entry entry = null;
+                        if (isJsonFileEmpty()) {
+                            Player player = new Player(name, 0, 1);
+                            writeToJson(player.getName(), player.getWins(), player.getLogin());
+                            entry = Entry.newBuilder()
+                                    .setName(player.getName())
+                                    .setWins(player.getWins())
+                                    .setLogins(player.getLogin())
+                                    .build();
+                            res.addLeader(entry);
+                            res.setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ");
+                        } else if (!leaderBoard.has(name)) { //if does not contain in leader is a new player
+                            Player player = new Player(name, 0, 1);
+                            writeToJson(player.getName(), player.getWins(), player.getLogin());
+                            entry = Entry.newBuilder()
+                                    .setName(player.getName())
+                                    .setWins(player.getWins())
+                                    .setLogins(player.getLogin())
+                                    .build();
+                            res.addLeader(entry);
+                            res.setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ");
+                        } else {//updates leader board if they exist
+                            String name1 = leaderBoard.getJSONObject(name).getString("Name");
+                            won = leaderBoard.getJSONObject(name).getInt("Won");
+                            login = leaderBoard.getJSONObject(name).getInt("Login");
+                            login++;
+                            writeToJson(name1, won, login);
+                            entry = Entry.newBuilder()
+                                    .setName(name1)
+                                    .setWins(won)
+                                    .setLogins(login)
+                                    .build();
+
+                            res.addLeader(entry);
+                            res.setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ");
+                        }
+                        response =  res.build();
                         response.writeDelimitedTo(out);
-//                        if (isJsonFileEmpty()) {
-//                            Player player = new Player(name, 0, 1);
-//                            writeToJson(player.getName(), player.getWins(), player.getLogin());
-//                        } else if (!leaderBoard.has(name)) { //if does not contain in leader is a new player
-//                            Player player = new Player(name, 0, 1);
-//                            writeToJson(player.getName(), player.getWins(), player.getLogin());
-//                        } else {//updates leader board if they exist
-//                            String name1 = leaderBoard.getJSONObject(name).getString("Name");
-//                            int won = leaderBoard.getJSONObject(name).getInt("Won");
-//                            int login = leaderBoard.getJSONObject(name).getInt("Login");
-//                            login++;
-//                            writeToJson(name1, won, login);
-//                        }
+//                        response = Response.newBuilder()
+//                                .setResponseType(Response.ResponseType.GREETING)
+//                                .setMessage("Hello " + name + " and welcome. Welcome to a simple game of battleship. ")
+//                                .build();
+//                        response.writeDelimitedTo(out);
                         break;
                     case NEW:
                         game.newGame(); // starting a new game
@@ -190,7 +221,6 @@ class SockBaseServer {
                         response = Response.newBuilder()
                                 .setResponseType(Response.ResponseType.PLAY)
                                 .setBoard(game.getHiddenBoard()) // gets the hidden board
-                                .setEval(false)
                                 .setSecond(false)
                                 .build();
 
@@ -201,10 +231,10 @@ class SockBaseServer {
                         String tile = op.getTile();
                         row1 = tile.charAt(0) - 'a' + 1;
 //                        col1 = (tile.charAt(1) - '0') * 2 - 1;
-                        switch (tile.charAt(1)){
+                        switch (tile.charAt(1)) {
                             case ('1'):
                                 col1 = 2;
-                            break;
+                                break;
                             case ('2'):
                                 col1 = 4;
                                 break;
@@ -223,19 +253,18 @@ class SockBaseServer {
                                 response.writeDelimitedTo(out);
                                 break;
                         }
-                        System.out.println("row1: \t"+ row1);
-                        System.out.println("Col: \t"+ col1);
+                        System.out.println("row1: \t" + row1);
+                        System.out.println("Col: \t" + col1);
                         if (!tile.matches("[a-d][1-4]")) {
                             System.out.println("Incorrect format\n");
-                        }else if (tile.length() != 2){
+                        } else if (tile.length() != 2) {
                             System.out.println("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n");
                             response = Response.newBuilder()
                                     .setResponseType(ERROR)
                                     .setMessage("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n")
                                     .build();
                             response.writeDelimitedTo(out);
-                        }
-                        else if (row1 < 1 || row1 >= game.getRow() || col1 < 2 || col1 > game.getCol()) {
+                        } else if (row1 < 1 || row1 >= game.getRow() || col1 < 2 || col1 > game.getCol()) {
                             System.out.println("Not with in bounds\n");
                             System.out.println("Column size " + game.getCol());
                             System.out.println("Row size " + game.getRow());
@@ -244,20 +273,18 @@ class SockBaseServer {
                                     .setMessage("Not with in bounds\n")
                                     .build();
                             response.writeDelimitedTo(out);
-                        }
-                        else if (row1 > 1 || row1 < game.getRow() || col1 > 2 || col1 < game.getCol()){
-                            System.out.println("tile location "+ game.getTile(row1,col1));
+                        } else if (row1 > 1 || row1 < game.getRow() || col1 > 2 || col1 < game.getCol()) {//with in bounds and condition met
+                            System.out.println("tile location " + game.getTile(row1, col1));
 //                            System.out.println("Wrong tile temp flip: "+ game.tempFlipWrongTiles(row1,col1));
 //                            game.replaceOneCharacter(row1,col1);
                             response = Response.newBuilder()
                                     .setResponseType(Response.ResponseType.PLAY)
-                                    .setBoard(game.tempFlipWrongTiles(row1,col1)) // gets the hidden board
-                                    .setEval(false)
-                                    .setSecond(false)
-                                    .setMessage(String.valueOf(game.getTile(row1,col1)))
+                                    .setFlippedBoard(game.tempFlipWrongTiles(row1,col1)) // gets the hidden board
+                                    .setSecond(true)
+                                    .setMessage(String.valueOf(game.getTile(row1, col1)))
                                     .build();
                             response.writeDelimitedTo(out);
-                        }else{
+                        } else {
                             System.out.println("Options not recognize\n");
                             response = Response.newBuilder()
                                     .setResponseType(ERROR)
@@ -268,12 +295,15 @@ class SockBaseServer {
                         break;
                     case TILE2:
 //                        game.showBoard();
-                        System.out.println("Hidden board: "+game.getHiddenBoard());
-                        System.out.println("Original board: "+game.showOriginalBoard());
+                        System.out.println("Hidden board: " + game.getHiddenBoard());
+                        System.out.println("Original board: " + game.showOriginalBoard());
+                        game.checkWin();
+                        if(game.getWon()){
 
+                        }
                         String tile1 = op.getTile();
                         row2 = tile1.charAt(0) - 'a' + 1;
-                        switch (tile1.charAt(1)){
+                        switch (tile1.charAt(1)) {
                             case ('1'):
                                 col2 = 2;
                                 break;
@@ -295,38 +325,39 @@ class SockBaseServer {
                                 response.writeDelimitedTo(out);
                                 break;
                         }
-                        System.out.println("Tile input "+ tile1);
-                        System.out.println("row2: "+ row2);
-                        System.out.println("Co2: "+ col2);
+                        System.out.println("Tile input " + tile1);
+                        System.out.println("row2: " + row2);
+                        System.out.println("Co2: " + col2);
                         if (!tile1.matches("[a-d][1-4]")) {
                             System.out.println("Incorrect format");
-                        }else if (tile1.length() != 2){
+                        } else if (tile1.length() != 2) {
                             System.out.println("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n");
                             response = Response.newBuilder()
                                     .setResponseType(ERROR)
+                                    .setFlippedBoard(game.getHiddenBoard())
                                     .setMessage("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n")
                                     .build();
                             response.writeDelimitedTo(out);
-                        }
-                        else if (row2 < 1 || row2 >= game.getRow() || col2 < 2 || col2 > game.getCol()) {
+                        } else if (row2 < 1 || row2 >= game.getRow() || col2 < 2 || col2 > game.getCol()) {
                             System.out.println("Not with in bounds\n");
                             response = Response.newBuilder()
                                     .setResponseType(ERROR)
+                                    .setFlippedBoard(game.getHiddenBoard())
                                     .setMessage("Not with in bounds\n")
                                     .build();
                             response.writeDelimitedTo(out);
-                        }
-                        else if (row2 > 1 || row2 < game.getRow() || col2 > 2 || col2 < game.getCol()){
-                            System.out.println("tile location "+ game.getTile(row2,col2));
-                            System.out.println("Original board: "+ game.showOriginalBoard());
-                            System.out.println("Hidden Board: "+ game.getHiddenBoard());
-                            if(game.matchFound(row1,col1,row2,col2)){
+                        } else if (row2 > 1 || row2 < game.getRow() || col2 > 2 || col2 < game.getCol()) {
+                            System.out.println("tile location " + game.getTile(row2, col2));
+                            System.out.println("Original board: " + game.showOriginalBoard());
+                            System.out.println("Hidden Board: " + game.getHiddenBoard());
+                            if (game.matchFound(row1, col1, row2, col2)) {
                                 System.out.println("Match found\n");
-                                game.replaceTwoCharacter(row1,col1,row2,col2);
+                                game.replaceTwoCharacter(row1, col1, row2, col2);
                                 response = Response.newBuilder()
                                         .setResponseType(PLAY)
                                         .setBoard(game.getHiddenBoard())
                                         .setEval(true)
+                                        .setSecond(false)
                                         .setMessage("Match has been found\n")
                                         .build();
                                 response.writeDelimitedTo(out);
@@ -334,12 +365,12 @@ class SockBaseServer {
                                 row2 = 0;
                                 col2 = 0;
                                 col1 = 0;
-                            }else{
+                            } else {
                                 System.out.println("Match has not been found\n");
-                                game.tempFlipWrongTiles(row1,col1,row2,col2);
+                                game.tempFlipWrongTiles(row1, col1, row2, col2);
                                 response = Response.newBuilder()
                                         .setResponseType(Response.ResponseType.PLAY)
-                                        .setBoard(game.tempFlipWrongTiles(row1,col1,row2,col2)) // gets the hidden board
+                                        .setBoard(game.tempFlipWrongTiles(row1, col1, row2, col2)) // gets the hidden board
                                         .setMessage("Not a match") // gets the hidden board
                                         .setEval(false)
                                         .setSecond(false)
@@ -350,8 +381,7 @@ class SockBaseServer {
                                 col2 = 0;
                                 col1 = 0;
                             }
-                        }
-                        else{
+                        } else {
                             System.out.println("Options not recognize\n");
                             response = Response.newBuilder()
                                     .setResponseType(ERROR)
@@ -362,18 +392,17 @@ class SockBaseServer {
                                     .build();
                             response.writeDelimitedTo(out);
                         }
-
                         break;
                     case QUIT:
-                        Response response3 = Response.newBuilder()
+                        response = Response.newBuilder()
                                 .setResponseType(Response.ResponseType.BYE)
                                 .setMessage("Leaving menu good bye").build();
-                        response3.writeDelimitedTo(out);
+                        response.writeDelimitedTo(out);
                         flag = false;
                         break;
                     case LEADER:
 
-                        Response.Builder res = Response.newBuilder()
+                        res = Response.newBuilder()
                                 .setResponseType(Response.ResponseType.LEADER);
 
                         // building an Entry for the leaderboard
@@ -393,8 +422,8 @@ class SockBaseServer {
                             res.addLeader(leader);
 
                         }
-                        Response res1 = res.build();
-                        res1.writeDelimitedTo(out);
+                        response = res.build();
+                        response.writeDelimitedTo(out);
                         break;
                     default:
                         System.out.println();
@@ -403,7 +432,7 @@ class SockBaseServer {
 
             } catch (Exception ex) {
 
-                if (out != null){
+                if (out != null) {
                     out.close();
                     System.out.println("Output stream close");
                 }
@@ -418,6 +447,7 @@ class SockBaseServer {
                 break;
             }
         } while (flag);
+    }
         // Example how to start a new game and how to build a response with the board which you could then send to the server
         // LINES between ====== are just an example for Protobuf and how to work with the differnt types. They DO NOT
         // belong into this code as is!
@@ -497,7 +527,6 @@ class SockBaseServer {
 //            if (in != null) in.close();
 //            if (clientSocket != null) clientSocket.close();
 //        }
-    }
 
 
     /**
