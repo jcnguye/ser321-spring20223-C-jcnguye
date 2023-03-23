@@ -1,8 +1,8 @@
 /**
-  File: Server.java
-  Author: Student in Fall 2020B
-  Description: Server class in package taskone.
-*/
+ File: Server.java
+ Author: Student in Fall 2020B
+ Description: Server class in package taskone.
+ */
 
 package taskone;
 
@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  * Class: Server
  * Description: Server tasks.
  */
-class ThreadPoolServer{
+class ThreadedServer {
 
     public static void main(String[] args) throws Exception {
         int port;
@@ -35,16 +35,33 @@ class ThreadPoolServer{
         }
         ServerSocket server = new ServerSocket(port);
         System.out.println("Server Started...");
+        int counter = 1;
+
+
+
         while (true) {
 
-
+            Socket sock = server.accept();
+            Performer performer = new Performer(sock,strings);
 //            Performer performer = new Performer(sock, strings);
 //            performer.doPerform();
+//            performer.start();
+            Thread thread = new Thread(performer);
+            thread.start();
+
+
+//            Socket sock = server.accept();
+//            Performer performer = new Performer(sock,strings);
+////            Executor pool = Executors.newCachedThreadPool();
+//            Executor pool = (Executor) Executors.callable(performer);
+////            pool.execute(new Performer(sock, strings));
+//            pool.execute(performer);
+//            performer.run();
+
 //            Executor pool = Executors.newFixedThreadPool(3);
-//
 //            for (int i=0; i < 3; i++) {
 //                System.out.println("Accepting a Request...");
-//                Socket sock = server.accept();
+//
 //                pool.execute(new Performer(sock, strings));
 //            }
 

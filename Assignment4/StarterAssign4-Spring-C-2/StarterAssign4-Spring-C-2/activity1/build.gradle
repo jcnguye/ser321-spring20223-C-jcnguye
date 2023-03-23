@@ -52,7 +52,7 @@ task runTask1(type: JavaExec){
 
   classpath = sourceSets.main.runtimeClasspath
 
-  main = 'taskone.ThreadedPoolServer'
+  main = 'taskone.ThreadPoolServer'
   standardInput = System.in
 
   // run with arguments e.g.: gradle runServer -Pport=9099 -q --console=plain
@@ -81,13 +81,13 @@ task runTask2(type: JavaExec){
 }
 
 task runTask3(type: JavaExec){
-  group 'Thread'
+  group 'Server'
   description 'Creates client socket sends a message to the server'
 
   classpath = sourceSets.main.runtimeClasspath
   standardInput = System.in
 
-  main = 'taskone.ThreadedPoolServer'
+  main = 'taskone.ThreadPoolServer'
   standardInput = System.in
 
   args 'localhost', 8000

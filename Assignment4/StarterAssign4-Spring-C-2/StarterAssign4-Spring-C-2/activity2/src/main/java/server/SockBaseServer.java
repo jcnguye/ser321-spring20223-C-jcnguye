@@ -4,7 +4,6 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
-import client.Player;
 import org.json.*;
 
 import java.lang.*;
@@ -97,7 +96,38 @@ class SockBaseServer {
         }
 
     }
-
+//    public int numberFormat(char num,Response response){
+//        int number = 0;
+//        String c = "";
+//        switch (num){
+//            case ('1'):
+//                return number = 2;
+//                break;
+//            case ('2'):
+//                return number = 4;
+//                break;
+//            case ('3'):
+//                return number = 6;
+//                break;
+//            case ('4'):
+//                return number = 8;
+//                break;
+//            default:
+//                System.out.println("Invalid column number\n");
+//                response = Response.newBuilder()
+//                        .setResponseType(ERROR)
+//                        .setMessage("Invalid column number\n")
+//                        .build();
+//                try {
+//                    response.writeDelimitedTo(out);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                return 0;
+//                break;
+//        }
+//        return 0;
+//    }
     // Handles the communication right now it just accepts one input and then is done you should make sure the server stays open
     // can handle multiple requests and does not crash when the server crashes
     // you can use this server as based or start a new one if you prefer. 
@@ -149,23 +179,25 @@ class SockBaseServer {
                         break;
                     case NEW:
                         game.newGame(); // starting a new game
-                        // Example on how you could build a simple response for PLAY as answer to NEW
-                        response = Response.newBuilder()
-                                .setResponseType(Response.ResponseType.PLAY)
-                                .setBoard(game.getBoard()) // gets the hidden board
-                                .setEval(false)
-                                .setSecond(false)
-                                .build();
+                        System.out.println("GAME HAS STARTED");
                         System.out.println("\n\nExample response:");
                         System.out.println("Type: " + response.getResponseType());
                         System.out.println("Board: \n" + response.getBoard());
-                        System.out.println("Original Board: \n" + game.showBoard());
+                        System.out.println("Original Board: \n" + game.showOriginalBoard());
                         System.out.println("Eval: \n" + response.getEval());
                         System.out.println("Second: \n" + response.getSecond());
+                        // Example on how you could build a simple response for PLAY as answer to NEW
+                        response = Response.newBuilder()
+                                .setResponseType(Response.ResponseType.PLAY)
+                                .setBoard(game.getHiddenBoard()) // gets the hidden board
+                                .setEval(false)
+                                .setSecond(false)
+                                .build();
+
                         response.writeDelimitedTo(out);
                         break;
                     case TILE1:
-                        game.showBoard();
+                        game.showOriginalBoard();
                         String tile = op.getTile();
                         row1 = tile.charAt(0) - 'a' + 1;
 //                        col1 = (tile.charAt(1) - '0') * 2 - 1;
@@ -191,10 +223,10 @@ class SockBaseServer {
                                 response.writeDelimitedTo(out);
                                 break;
                         }
-                        System.out.println("row1: "+ row1);
-                        System.out.println("Col: "+ col1);
+                        System.out.println("row1: \t"+ row1);
+                        System.out.println("Col: \t"+ col1);
                         if (!tile.matches("[a-d][1-4]")) {
-                            System.out.println("Incorrect format");
+                            System.out.println("Incorrect format\n");
                         }else if (tile.length() != 2){
                             System.out.println("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n");
                             response = Response.newBuilder()
@@ -203,8 +235,10 @@ class SockBaseServer {
                                     .build();
                             response.writeDelimitedTo(out);
                         }
-                        else if (row1 < 1 || row1 > game.getRow() || col1 < 2 || col1 > game.getCol()) {
+                        else if (row1 < 1 || row1 >= game.getRow() || col1 < 2 || col1 > game.getCol()) {
                             System.out.println("Not with in bounds\n");
+                            System.out.println("Column size " + game.getCol());
+                            System.out.println("Row size " + game.getRow());
                             response = Response.newBuilder()
                                     .setResponseType(ERROR)
                                     .setMessage("Not with in bounds\n")
@@ -213,7 +247,8 @@ class SockBaseServer {
                         }
                         else if (row1 > 1 || row1 < game.getRow() || col1 > 2 || col1 < game.getCol()){
                             System.out.println("tile location "+ game.getTile(row1,col1));
-                            System.out.println("Wrong tile temp flip: "+ game.tempFlipWrongTiles(row1,col1));
+//                            System.out.println("Wrong tile temp flip: "+ game.tempFlipWrongTiles(row1,col1));
+//                            game.replaceOneCharacter(row1,col1);
                             response = Response.newBuilder()
                                     .setResponseType(Response.ResponseType.PLAY)
                                     .setBoard(game.tempFlipWrongTiles(row1,col1)) // gets the hidden board
@@ -230,17 +265,104 @@ class SockBaseServer {
                                     .build();
                             response.writeDelimitedTo(out);
                         }
-
                         break;
                     case TILE2:
-                        boolean win1 = game.checkWinCondition();
-                        response = Response.newBuilder()
-                                .setResponseType(Response.ResponseType.PLAY)
-                                .setBoard(game.getBoard()) // gets the hidden board
-                                .setEval(true)
-                                .setSecond(false)
-                                .build();
-                        response.writeDelimitedTo(out);
+//                        game.showBoard();
+                        System.out.println("Hidden board: "+game.getHiddenBoard());
+                        System.out.println("Original board: "+game.showOriginalBoard());
+
+                        String tile1 = op.getTile();
+                        row2 = tile1.charAt(0) - 'a' + 1;
+                        switch (tile1.charAt(1)){
+                            case ('1'):
+                                col2 = 2;
+                                break;
+                            case ('2'):
+                                col2 = 4;
+                                break;
+                            case ('3'):
+                                col2 = 6;
+                                break;
+                            case ('4'):
+                                col2 = 8;
+                                break;
+                            default:
+                                System.out.println("Invalid column number\n");
+                                response = Response.newBuilder()
+                                        .setResponseType(ERROR)
+                                        .setMessage("Invalid column number\n")
+                                        .build();
+                                response.writeDelimitedTo(out);
+                                break;
+                        }
+                        System.out.println("Tile input "+ tile1);
+                        System.out.println("row2: "+ row2);
+                        System.out.println("Co2: "+ col2);
+                        if (!tile1.matches("[a-d][1-4]")) {
+                            System.out.println("Incorrect format");
+                        }else if (tile1.length() != 2){
+                            System.out.println("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n");
+                            response = Response.newBuilder()
+                                    .setResponseType(ERROR)
+                                    .setMessage("Invalid input. Please enter a letter (a-d) followed by a number (1-4).\n")
+                                    .build();
+                            response.writeDelimitedTo(out);
+                        }
+                        else if (row2 < 1 || row2 >= game.getRow() || col2 < 2 || col2 > game.getCol()) {
+                            System.out.println("Not with in bounds\n");
+                            response = Response.newBuilder()
+                                    .setResponseType(ERROR)
+                                    .setMessage("Not with in bounds\n")
+                                    .build();
+                            response.writeDelimitedTo(out);
+                        }
+                        else if (row2 > 1 || row2 < game.getRow() || col2 > 2 || col2 < game.getCol()){
+                            System.out.println("tile location "+ game.getTile(row2,col2));
+                            System.out.println("Original board: "+ game.showOriginalBoard());
+                            System.out.println("Hidden Board: "+ game.getHiddenBoard());
+                            if(game.matchFound(row1,col1,row2,col2)){
+                                System.out.println("Match found\n");
+                                game.replaceTwoCharacter(row1,col1,row2,col2);
+                                response = Response.newBuilder()
+                                        .setResponseType(PLAY)
+                                        .setBoard(game.getHiddenBoard())
+                                        .setEval(true)
+                                        .setMessage("Match has been found\n")
+                                        .build();
+                                response.writeDelimitedTo(out);
+                                row1 = 0;
+                                row2 = 0;
+                                col2 = 0;
+                                col1 = 0;
+                            }else{
+                                System.out.println("Match has not been found\n");
+                                game.tempFlipWrongTiles(row1,col1,row2,col2);
+                                response = Response.newBuilder()
+                                        .setResponseType(Response.ResponseType.PLAY)
+                                        .setBoard(game.tempFlipWrongTiles(row1,col1,row2,col2)) // gets the hidden board
+                                        .setMessage("Not a match") // gets the hidden board
+                                        .setEval(false)
+                                        .setSecond(false)
+                                        .build();
+                                response.writeDelimitedTo(out);
+                                row1 = 0;
+                                row2 = 0;
+                                col2 = 0;
+                                col1 = 0;
+                            }
+                        }
+                        else{
+                            System.out.println("Options not recognize\n");
+                            response = Response.newBuilder()
+                                    .setResponseType(ERROR)
+                                    .setBoard(game.getHiddenBoard()) // gets the hidden board
+                                    .setEval(false)
+                                    .setSecond(false)
+                                    .setMessage("Invalid option")
+                                    .build();
+                            response.writeDelimitedTo(out);
+                        }
+
                         break;
                     case QUIT:
                         Response response3 = Response.newBuilder()

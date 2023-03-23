@@ -1,6 +1,5 @@
 package server;
 
-import java.util.Scanner;
 import java.util.*;
 import java.io.*;
 
@@ -141,7 +140,7 @@ public class Game {
      *
      * @return String of original board
      */
-    public String showBoard() {
+    public String showOriginalBoard() {
         StringBuilder sb = new StringBuilder();
         for (char[] subArray : original) {
             sb.append(subArray);
@@ -155,7 +154,7 @@ public class Game {
      *
      * @return String of the current hidden board
      */
-    public String getBoard() {
+    public String getHiddenBoard() {
         StringBuilder sb = new StringBuilder();
         for (char[] subArray : hidden) {
             sb.append(subArray);
@@ -220,11 +219,12 @@ public class Game {
         char hidTile = getTile(hiddenRow,hiddenCol);
         char originTile = getTile(originRow,originCol);
         if(hidTile == originTile){
+            hidden[hiddenRow][hiddenCol] = original[originRow][originCol];
             return true;
         }else{
+//            tempFlipWrongTiles(hiddenRow,hiddenCol,originRow,originCol);
             return false;
         }
-
     }
 
     /**
@@ -235,7 +235,18 @@ public class Game {
      */
     public synchronized String replaceOneCharacter(int rowNumber, int colNumber) {
         hidden[rowNumber][colNumber] = original[rowNumber][colNumber];
-        return (getBoard());
+        return (getHiddenBoard());
+    }
+    /**
+     * Method that replaces a character, needed when a match was found, would need to be called twice
+     * You can of course also change it to get two rows and two cols if you like
+     *
+     * @return String of the current hidden board
+     */
+    public synchronized String replaceTwoCharacter(int rowNumber, int colNumber, int rowNumber1, int colNumber1) {
+        hidden[rowNumber][colNumber] = original[rowNumber][colNumber];
+        hidden[rowNumber1][colNumber1] = original[rowNumber1][colNumber1];
+        return (getHiddenBoard());
     }
 
     public void checkWin() {

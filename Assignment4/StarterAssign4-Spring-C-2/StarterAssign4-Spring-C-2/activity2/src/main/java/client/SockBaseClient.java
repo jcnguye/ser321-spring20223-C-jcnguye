@@ -9,6 +9,7 @@ import buffers.RequestProtos.Request;
 import buffers.ResponseProtos.Response;
 import buffers.ResponseProtos.Entry;
 
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ class SockBaseClient {
         GameViktory,
 
     }
+
     private enum GuessState {
         Guess1,
         Guess2,
@@ -127,8 +129,19 @@ class SockBaseClient {
                 }
                     if(gameState == States.GameRunning){
                         Scanner scanner = new Scanner(System.in);
-                        System.out.println("Enter input");
-                        String gameInput = scanner.nextLine();
+                        String gameInput;
+                        boolean flag2 = false;
+                        do{
+                            System.out.println("Enter game input\n");
+                            gameInput = scanner.nextLine();
+                            if((!gameInput.matches("[a-d][1-4]")) || gameInput.length() != 2){
+
+                                System.out.println("Invalid game input\n");
+                                System.out.println("Try again\n");
+                            }else {
+                                flag2 = true;
+                            }
+                        }while (flag2==false);
                         System.out.println("In game state");
                         if(guessState == GuessState.Guess1){
                             op = Request.newBuilder().setOperationType(Request.OperationType.TILE1).setTile(gameInput).build();
@@ -137,16 +150,18 @@ class SockBaseClient {
                         }else if (guessState == GuessState.Guess2){
                             op = Request.newBuilder().setOperationType(Request.OperationType.TILE2).setTile(gameInput).build();
                             op.writeDelimitedTo(out);
-
                             guessState = GuessState.Guess1;
                         }
+                        response = Response.parseDelimitedFrom(in);//wait response here?
                     }
-                response = Response.parseDelimitedFrom(in);//wait response here?
+
+                    if(gameState != States.GameRunning){
+                        response = Response.parseDelimitedFrom(in);//wait response here?
+                    }
+
 
                 if (response == null || !response.hasResponseType()) {
-
                     System.out.println("response is empty or null");
-
                 }
 
                 switch (response.getResponseType()) {
@@ -167,7 +182,7 @@ class SockBaseClient {
                     case PLAY:
                         System.out.println("Player is playing");
                         System.out.println("Type enter to continue");
-                        response.getBoard();
+//                        response.getBoard();
                         System.out.println(response.getBoard());
                         System.out.println(response.getMessage());
                         gameState = States.GameRunning;
