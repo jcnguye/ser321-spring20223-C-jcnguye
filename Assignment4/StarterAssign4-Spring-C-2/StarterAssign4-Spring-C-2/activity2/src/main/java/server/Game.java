@@ -270,6 +270,7 @@ public class Game {
                     equal = false;
                     return false;
                 }else {
+                    setWon();
                     return true;
                 }
             }

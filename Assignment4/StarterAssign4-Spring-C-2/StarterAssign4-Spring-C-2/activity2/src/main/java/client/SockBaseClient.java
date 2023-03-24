@@ -65,6 +65,7 @@ class SockBaseClient {
         Response response = null;
         boolean flag = true;
         int flag1 = 0;
+
 //            do {
 
         // connect to the server
@@ -77,7 +78,7 @@ class SockBaseClient {
 
         op.writeDelimitedTo(out); //write requests
         int tileRepeater = 0;
-        String tile = "";
+        String name = strToSend;
         do {
             try {
                 // read from the server
@@ -91,6 +92,7 @@ class SockBaseClient {
                     // connect to the server
 //                    try {
                     if (gameState == States.GameMenu) {
+                        System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
                         Scanner scanner = new Scanner(System.in);
                         int choice = scanner.nextInt(); //should wait here why is it not waiting
                         // write to the server
@@ -126,24 +128,32 @@ class SockBaseClient {
                     if(gameState == States.GameRunning){
                         Scanner scanner = new Scanner(System.in);
                         String gameInput;
-                        boolean flag2 = false;
-                        do{
-                            System.out.println("Enter game input\n");
-                            gameInput = scanner.nextLine();
-                            if((!gameInput.matches("[a-d][1-4]")) || gameInput.length() != 2){
-                                System.out.println("Invalid game input\n");
-                                System.out.println("Try again\n");
-                                System.out.println("Format is [letter,number] \n example, a1, b2");
-                            }else {
-                                flag2 = true;
-                            }
-                        }while (!flag2);
-                        System.out.println("In game state");
+//                        boolean flag2 = false;
+//                        do{
+//
+//                            if((!gameInput.matches("[a-d][1-4]")) || gameInput.length() != 2){
+//                                System.out.println("Invalid game input\n");
+//                                System.out.println("Try again\n");
+//                                System.out.println("Format is [letter,number] \n example, a1, b2");
+//                            }else {
+//                                flag2 = true;
+//                            }
+//                        }while (!flag2);
+                        System.out.println("Enter game input\n");
+                        gameInput = scanner.nextLine();
                         if(second == false){
-                            op = Request.newBuilder().setOperationType(Request.OperationType.TILE1).setTile(gameInput).build();
+                            op = Request.newBuilder()
+                                    .setOperationType(Request.OperationType.TILE1)
+                                    .setTile(gameInput)
+                                    .setName(name)
+                                    .build();
                             op.writeDelimitedTo(out);
                         }else if (second == true){
-                            op = Request.newBuilder().setOperationType(Request.OperationType.TILE2).setTile(gameInput).build();
+                            op = Request.newBuilder()
+                                    .setOperationType(Request.OperationType.TILE2)
+                                    .setTile(gameInput)
+                                    .setName(name)
+                                    .build();
                             op.writeDelimitedTo(out);
                         }
                         response = Response.parseDelimitedFrom(in);//wait response here?
@@ -162,27 +172,36 @@ class SockBaseClient {
                     case GREETING:
                         if (flag1 == 0) {
                             System.out.println(response.getMessage());
-                            System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
+//                            System.out.println("* \nWhat would you like to do? \n 1 - to see the leader board \n 2 - to enter a game \n 3 - quit the game");
                             flag1++;
                         }
+                        for(Entry lead: response.getLeaderList()){
+                            if(lead.getName() == name){
+                                player = new Player(lead.getName(), lead.getWins(), lead.getLogins());
+                            }
+                        }
+//                        player = new Player();
                         op = null;
                         break;
                     case LEADER:
                         for (Entry lead : response.getLeaderList()) {
-                            System.out.println(lead.getName() + ": " + lead.getLogins());
+                            System.out.println("Name: \t" + lead.getName());
+                            System.out.println("\t\tWins: " + lead.getWins());
+                            System.out.println("\t\tLogin: " + lead.getLogins());
                         }
                         op = null;
                         break;
                     case PLAY:
-                        System.out.println("Player is playing");
 //                        System.out.println(response.getBoard());
                         if(response.hasSecond()){
                             second = response.getSecond();
                         }
                         if(response.hasBoard()){
+                            System.out.println("Current board: \n");
                             System.out.println(response.getBoard());
                         }
                         if(response.hasFlippedBoard()){
+                            System.out.println("What you picked: \n");
                             System.out.println(response.getFlippedBoard());
                         }
                         if(response.hasMessage()){
@@ -191,7 +210,7 @@ class SockBaseClient {
                         gameState = States.GameRunning;
                         break;
                     case BYE:
-                        System.out.println("Game exit");
+                        System.out.println("Game exit\n");
                         System.out.println(response.getMessage());
                         if (in != null) in.close();
                         if (out != null) out.close();
@@ -201,6 +220,9 @@ class SockBaseClient {
                         break;
                     case WON:
                         System.out.println("HOOORAY YOU WON!!!");
+                        if(response.hasBoard()){
+                            System.out.println(response.getBoard());
+                        }
                         gameState = States.GameMenu;
                         break;
                     case ERROR:

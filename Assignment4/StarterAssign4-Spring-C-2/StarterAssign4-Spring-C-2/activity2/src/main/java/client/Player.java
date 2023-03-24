@@ -26,9 +26,6 @@ public class Player implements Comparable<Player> {
         this.name = name;
         this.login = login;
     }
-    public void incrementLogin(){
-        login++;
-    }
 
     public String getName() {
         return name;

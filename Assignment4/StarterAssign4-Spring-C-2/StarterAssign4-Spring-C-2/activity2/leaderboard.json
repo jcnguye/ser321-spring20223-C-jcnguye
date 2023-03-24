@@ -1,18 +1,1 @@
-{
-  "dave": {
-    "Won": 0,
-    "Login": 32,
-    "Name": "dave"
-  },
-  "bob": {
-    "Won": 0,
-    "Login": 2,
-    "Name": "bob"
-  },
-
-  "ed": {
-    "Won": 0,
-    "Login": 10,
-    "Name": "ed"
-  }
-}
+{"dave":{"Won":0,"Login":3,"Name":"dave"},"charlie":{"Won":0,"Login":2,"Name":"charlie"},"ed":{"Won":0,"Login":1,"Name":"ed"}}
