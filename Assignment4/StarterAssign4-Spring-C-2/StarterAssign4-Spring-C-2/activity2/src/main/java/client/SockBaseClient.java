@@ -79,6 +79,7 @@ class SockBaseClient {
         op.writeDelimitedTo(out); //write requests
         int tileRepeater = 0;
         String name = strToSend;
+        String board = "";
         do {
             try {
                 // read from the server
@@ -128,19 +129,16 @@ class SockBaseClient {
                     if(gameState == States.GameRunning){
                         Scanner scanner = new Scanner(System.in);
                         String gameInput;
-//                        boolean flag2 = false;
-//                        do{
-//
-//                            if((!gameInput.matches("[a-d][1-4]")) || gameInput.length() != 2){
-//                                System.out.println("Invalid game input\n");
-//                                System.out.println("Try again\n");
-//                                System.out.println("Format is [letter,number] \n example, a1, b2");
-//                            }else {
-//                                flag2 = true;
-//                            }
-//                        }while (!flag2);
-                        System.out.println("Enter game input\n");
-                        gameInput = scanner.nextLine();
+                        System.out.println("Enter game input <row1><column1>,<letter><number> - Example 'a1'\n");
+
+                        do {
+                            System.out.println(board);
+                            gameInput = scanner.nextLine();
+                            if(Objects.equals(gameInput, "")){
+                                System.out.println("No input given try again \n");
+                            }
+                        }while (Objects.equals(gameInput, ""));
+
                         if(second == false){
                             op = Request.newBuilder()
                                     .setOperationType(Request.OperationType.TILE1)
@@ -199,6 +197,7 @@ class SockBaseClient {
                         if(response.hasBoard()){
                             System.out.println("Current board: \n");
                             System.out.println(response.getBoard());
+                            board = response.getBoard();
                         }
                         if(response.hasFlippedBoard()){
                             System.out.println("What you picked: \n");
@@ -226,6 +225,9 @@ class SockBaseClient {
                         gameState = States.GameMenu;
                         break;
                     case ERROR:
+                        if(response.hasSecond()){
+                            second = response.getSecond();
+                        }
                         System.out.println(response.getMessage());
                     default:
                         System.out.println();

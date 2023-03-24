@@ -215,6 +215,19 @@ public class Game {
             return '?';
     }
 
+    /**
+     * @param row
+     * @param col
+     * @return character at selected row and column
+     */
+    public synchronized char getHiddenTile(int row, int col) {
+        if (row < original.length && col < original[0].length)
+            return hidden[row][col];
+        else
+            return '?';
+    }
+
+
     public synchronized boolean matchFound(int hiddenRow, int hiddenCol,int originRow, int originCol) {
         char hidTile = getTile(hiddenRow,hiddenCol);
         char originTile = getTile(originRow,originCol);
@@ -234,6 +247,7 @@ public class Game {
      * @return String of the current hidden board
      */
     public synchronized String replaceOneCharacter(int rowNumber, int colNumber) {
+
         hidden[rowNumber][colNumber] = original[rowNumber][colNumber];
         return (getHiddenBoard());
     }

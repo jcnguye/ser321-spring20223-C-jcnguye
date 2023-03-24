@@ -21,9 +21,9 @@ Project Checklist
    NOTE: The server will only run a single instance of the game at any given time.
    If a user requests a new game and a game is in progress, they will join the current
    game. See video for details.
-9. [ ] (2 points) Users win after finding all matches, they get 1 point for winning.
+9. [x] (2 points) Users win after finding all matches, they get 1 point for winning.
 10. [x] (2 points) After winning the Client goes back to the main menu.
-11. [ ] (2 points) Multiple clients can win together and each get a point for winning.
+11. [x] (2 points) Multiple clients can win together and each get a point for winning.
 12. [x] (3 points) A tile coordinate is a 2 character string with row first as letter followed by
     column as number, columns are one indexed (0 is invalid) e.g. tile = "d1", row=d,
     column=1. You can assume no more than a 4x4 board size, so rows are a, b, c, d,
@@ -32,16 +32,16 @@ Project Checklist
     allowed to change the format of these if you do not want the "|" or row column
     information in them to make turning tiles easier. That is up to you. When displayed
     on the Client the letters and column numbers should be displayed though!
-14. [ ] (4 points) Client sends first tile and server evaluates if the request is valid and sends
+14. [x] (4 points) Client sends first tile and server evaluates if the request is valid and sends
     back the board with that tile unturned. Handle errors accordingly, e.g. out of
     bounds, tile already turned - use the "error" flag in response for errors.
     (has not check if tile has been turned yet)
-15. [ ] (4 points) Client sends second tile (if first tile was success response) and server
+15. [x] (4 points) Client sends second tile (if first tile was success response) and server
     evaluates if the request is valid and sends back the board with that tile unturned.
     Handle errors accordingly, e.g. out of bounds, tile already turned - use the "error"
     flag in response for errors.
 16. [x] (2 points) Client presents the information well.
-17. [ ] (2 points) After both turned tiles are shown user presses any key which will lead to
+17. [x] (2 points) After both turned tiles are shown user presses any key which will lead to
     the Client to just show the current board (with the two tiles if not matches turned
     back again).
 18. [x] (3 point) Game quits gracefully when option 3 is chosen.
@@ -60,7 +60,7 @@ Project Checklist
     board the client will get this information and will update the board and inform the
     user, e.g. client B makes a correct guess, so the board updates and all other clients
     will get the information about the new board right away.
-23. (3 points) If user types in "exit" while in the game, the client will exit gracefully.
+23. [x] (3 points) If user types in "exit" while in the game, the client will exit gracefully.
 24. [x] (2 points) When sending back an error DO NOT just use error codes but a descriptive
     message that the Client can print. Since others are supposed to be able to use your
     server they might not know your error codes, so print good messages.
