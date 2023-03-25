@@ -415,6 +415,7 @@ class SockBaseServer implements Runnable{
 //                            response.writeDelimitedTo(out);
 
                         }
+                        assert response != null;
                         response.writeDelimitedTo(out);
                         break;
                     case QUIT:
@@ -546,7 +547,7 @@ class SockBaseServer implements Runnable{
             System.out.println("Expected arguments: <port(int)> <delay(int)>");
             System.exit(1);
         }
-        int port = 9099; // default port
+        int port = 8080; // default port
         int sleepDelay = 10000; // default delay
         Socket clientSocket = null;
         ServerSocket serv = null;

@@ -28,7 +28,7 @@ protobuf {
   }
 }
  def host = 'localhost'
- def port = 9099
+ def port = 8080
 
 // task reading in the arguments if any given, if not the default from above will be used
 task arguments {
