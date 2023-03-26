@@ -14,7 +14,11 @@ taking in integers. when game starts pick characters and number in format of the
 So <a-b><1-4>, <character><number>, example a1.
 d) A short video for each activity (2-4min) showing how you run the program,
 showing what works and briefly show your code.
+
+https://youtu.be/cruw32DBA8k
+
 e) Design your calls and user interaction in a way that they are easy. Remember
 we have many assignments to grade, design it so it is easy for us. There will be
 some requirements later you should fulfill.
+
 f) Name the requirements that you think you fulfilled
