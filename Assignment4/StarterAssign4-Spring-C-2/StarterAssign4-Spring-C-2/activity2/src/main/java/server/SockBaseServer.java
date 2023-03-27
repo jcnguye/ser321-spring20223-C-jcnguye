@@ -331,7 +331,15 @@ class SockBaseServer implements Runnable{
                                     .setMessage("Not with in bounds\n")
                                     .build();
 //                            response.writeDelimitedTo(out);
-                        } else if (row2 > 1 || row2 < game.getRow() || col2 > 2 || col2 < game.getCol() || !game.getWon()) {
+                        } else if(row1 == row2 && col1 == col2){
+                            game.tempFlipWrongTiles(row1,col1);
+                            System.out.println("Tile has already been picked");
+                            response = Response.newBuilder()
+                                    .setResponseType(ERROR)
+                                    .setFlippedBoard(game.getHiddenBoard())
+                                    .setMessage("Tile has already been picked\n")
+                                    .build();
+                        }else if (row2 > 1 || row2 < game.getRow() || col2 > 2 || col2 < game.getCol() || !game.getWon()) {
                             System.out.println("tile location \n" + game.getTile(row2, col2));
                             System.out.println("Original board: \n" + game.showOriginalBoard());
                             System.out.println("Hidden Board: \n" + game.getHiddenBoard());
