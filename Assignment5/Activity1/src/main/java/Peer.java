@@ -23,11 +23,6 @@ public class Peer {
 		this.bufferedReader = bufReader;
 		this.serverThread = serverThread;
 	}
-	public Peer(BufferedReader bufReader, String username){
-		this.username = username;
-		this.bufferedReader = bufReader;
-
-	}
 	/**
 	 * Main method saying hi and also starting the Server thread where other peers can subscribe to listen
 	 *
@@ -39,6 +34,7 @@ public class Peer {
 		String username = args[0];
 		System.out.println("Hello " + username + " and welcome! Your port will be " + args[1]);
 		String host = "localhost";
+		int count = Integer.parseInt(args[3]); //node number it is
 		// starting the Server Thread, which waits for other peers to want to connect
 		ServerThread serverThread = new ServerThread(args[1]);
 
@@ -46,11 +42,13 @@ public class Peer {
 		serverThread.setPeer(peer);
 		serverThread.start();
 		//Starting out when theres no active nodes
-		if(args[2].equals("null")){
-			peer.askForInput();
-		}else{
+		if(count == 1){
+//			peer.waitConnectionClient("local",);
+			peer.askForInput1(Integer.parseInt(args[2]));
+		} else if (count > 1) {
 			peer.autoUpdateListenPeers(host,Integer.parseInt(args[2]));
 		}
+
 
 
 	}
@@ -82,36 +80,21 @@ public class Peer {
 	 * Per default we listen to no one
 	 *
 	 */
-	public void updateListenToPeers1(String host,int port) throws Exception {
-		System.out.println("> Who do you want to listen to?\n");
+	public void waitConnectionClient(String host,int port) throws Exception {
+		System.out.println("Listening to port: "+ port + "\n");
 
-		boolean validInput = false;
-
-		while (!validInput){
-			try {
-				System.out.println("> Enter port number. port\n");
-				port = Integer.parseInt(bufferedReader.readLine());
-				validInput = true;
-			}catch (NumberFormatException e ){
-				System.out.println("Not a number");
+		Socket socket = null;
+		try {
+			socket = new Socket(host, port);
+			new ClientThread(socket).start(); //new node
+		} catch (Exception c) {
+			if (socket != null) {
+				socket.close();
+			} else {
+				System.out.println("Port does not exist");
+				System.exit(0);
 			}
 		}
-
-			Socket socket = null;
-
-			try {
-				socket = new Socket(host, port);
-				new ClientThread(socket).start();
-
-			} catch (Exception c) {
-				if (socket != null) {
-					socket.close();
-				} else {
-					System.out.println("That port does not exist");
-					System.out.println("Try again");
-				}
-			}
-
 		askForInput();
 	}
 	
@@ -127,6 +110,28 @@ public class Peer {
 			System.out.println("> You can now start chatting (exit to exit)");
 			while(true) {
 				String message = bufferedReader.readLine();
+				if (message.equals("exit")) {
+					System.out.println("bye, see you next time");
+					serverThread.sendMessage("{'username': '"+ username +"','message':'" + "exit" + "'}");
+					break;
+				}else {
+					// we are sending the message to our server thread. this one is then responsible for sending it to listening peers
+					serverThread.sendMessage("{'username': '"+ username +"','message':'" + message + "'}");
+				}
+			}
+			System.exit(0);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void askForInput1(int port){
+		try {
+			System.out.println("Waiting for connection");
+			while(true) {
+				String message = bufferedReader.readLine();
+				System.out.println("> You can now start chatting (exit to exit)");
 				if (message.equals("exit")) {
 					System.out.println("bye, see you next time");
 					serverThread.sendMessage("{'username': '"+ username +"','message':'" + "exit" + "'}");

@@ -25,7 +25,6 @@ public class ClientThread extends Thread{
 				json = new JSONObject(bufferedReader.readLine());
 				System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
 			} catch (IOException e) {
-//				throw new RuntimeException();
 				System.out.println();
 				try {
 					json = new JSONObject(bufferedReader.readLine());

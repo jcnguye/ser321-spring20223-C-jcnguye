@@ -34,9 +34,9 @@ task runActivity(type: JavaExec) {
 
     main = 'Peer'
     standardInput = System.in
-    if (project.hasProperty('name') && project.hasProperty('port') && project.hasProperty('node')) {
-        args(project.getProperty('name'), project.getProperty('port'),project.getProperty('node'))
+    if (project.hasProperty('name') && project.hasProperty('port') && project.hasProperty('node')&& project.hasProperty('count')) {
+        args(project.getProperty('name'), project.getProperty('port'),project.getProperty('node'),project.getProperty('count'))
     }else{
-        args 'name', 7000, 'null'
+        args 'name', 7000, 'null',1
     }
 }

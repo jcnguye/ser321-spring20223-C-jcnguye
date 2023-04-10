@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ import java.util.Set;
 public class ServerThread extends Thread{
 	private ServerSocket serverSocket;
 	private Set<Socket> listeningSockets = new HashSet<Socket>();
+//	private Set<Socket> listeningSockets = new HashSet<Socket>();
 	Peer peer;
 	
 	public ServerThread(String portNum) throws IOException {
@@ -35,7 +37,7 @@ public class ServerThread extends Thread{
 		try {
 			while (true) {
 				JSONObject json = null;
-				Socket sock = serverSocket.accept();
+				Socket sock = serverSocket.accept(); //waits
 				System.out.println("------Connection made---------");
 				listeningSockets.add(sock);
 				peer.autoUpdateListenPeers("localhost", sock.getLocalPort());
@@ -46,7 +48,12 @@ public class ServerThread extends Thread{
 			e.printStackTrace();
 		}
 	}
+	public ArrayList<Integer> Ports(){
+		ArrayList port1 = new ArrayList<>();
 
+
+		return port1;
+	}
 	public JSONObject response(Set<Socket> sock){
 		JSONObject json = new JSONObject();
 

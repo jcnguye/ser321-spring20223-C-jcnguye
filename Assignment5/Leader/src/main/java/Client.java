@@ -1,56 +1,42 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 
+import org.json.*;
+
 /**
- * Client 
+ * Client
  * This is the Client thread class, there is a client thread for each peer we are listening to.
- * We are constantly listening and if we get a message we print it. 
+ * We are constantly listening and if we get a message we print it.
  */
 
-public class Client {
-
+public class Client extends Thread{
 	private BufferedReader bufferedReader;
-	private String userName;
-	OutputStream out = null;
-	InputStream in = null;
+
 	public Client(Socket socket) throws IOException {
 		bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	}
+	public void run() {
+		while (true) {
+			JSONObject json = null;
 
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
+			try {
+				json = new JSONObject(bufferedReader.readLine());
+				System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
+			} catch (IOException e) {
+				System.out.println();
+				try {
+					json = new JSONObject(bufferedReader.readLine());
+					System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
+				} catch (IOException ex) {
+					throw new RuntimeException(ex);
+				}
 
-	public void run(){
-		boolean flag = true;
-		while (flag){
-
-			int choice = 0;
-			switch (choice){
-				case 1:
-					System.out.println("Credit");
-					break;
-				case 2:
-					System.out.println("Pay Back");
-					break;
-				default:
-					System.out.println("Not a valid choice");
 			}
-
 
 
 		}
 	}
-
-	public static void main (String[] args) throws IOException {
-		String name = args[0];
-		int port = Integer.parseInt(args[1]);
-		Socket socket = new Socket("localhost",port);
-		Client client = new Client(socket);
-		client.setUserName(name);
-		client.run();
-
-	}
-
 
 }
