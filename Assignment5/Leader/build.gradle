@@ -23,18 +23,50 @@ task runPeer(type: JavaExec) {
         args '7000' // port
         args 'localhost'
 }
-task runActivity(type: JavaExec) {
-    group 'client'
+task leader(type: JavaExec) {
+    group 'Run App'
     description 'Creates client socket sends a message to the server'
 
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 
-    main = 'Peer'
+    main = 'Leader'
     standardInput = System.in
     if (project.hasProperty('name') && project.hasProperty('port') && project.hasProperty('node')) {
         args(project.getProperty('name'), project.getProperty('port'),project.getProperty('node'))
     }else{
-        args 'name', 7000, 1111
+        args 'name', 7000, 'null'
     }
 }
+task client(type: JavaExec) {
+    group 'Run App'
+    description 'Creates client socket sends a message to the server'
+
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+
+    main = 'Leader'
+    standardInput = System.in
+    if (project.hasProperty('name') && project.hasProperty('port') && project.hasProperty('node')) {
+        args(project.getProperty('name'), project.getProperty('port'),project.getProperty('node'))
+    }else{
+        args 'name', 6000, 'null'
+    }
+}
+
+task server(type: JavaExec) {
+    group 'Run App'
+    description 'Creates client socket sends a message to the server'
+
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+
+    main = 'ServerThread'
+    standardInput = System.in
+    if (project.hasProperty('port')) {
+        args(project.getProperty('port'))
+    }else{
+        args 7000
+    }
+}
+

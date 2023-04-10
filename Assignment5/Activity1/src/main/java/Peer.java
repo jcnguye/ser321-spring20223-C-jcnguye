@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This is the main class for the peer2peer program.
@@ -21,6 +23,11 @@ public class Peer {
 		this.bufferedReader = bufReader;
 		this.serverThread = serverThread;
 	}
+	public Peer(BufferedReader bufReader, String username){
+		this.username = username;
+		this.bufferedReader = bufReader;
+
+	}
 	/**
 	 * Main method saying hi and also starting the Server thread where other peers can subscribe to listen
 	 *
@@ -31,20 +38,20 @@ public class Peer {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 		String username = args[0];
 		System.out.println("Hello " + username + " and welcome! Your port will be " + args[1]);
-
 		String host = "localhost";
 		// starting the Server Thread, which waits for other peers to want to connect
 		ServerThread serverThread = new ServerThread(args[1]);
-		serverThread.start();
 
 		Peer peer = new Peer(bufferedReader, args[0], serverThread);
+		serverThread.setPeer(peer);
+		serverThread.start();
 		//Starting out when theres no active nodes
 		if(args[2].equals("null")){
-			peer.updateListenToPeers1("localhost");
+			peer.askForInput();
 		}else{
-			//when theres active nodes update automatically
 			peer.autoUpdateListenPeers(host,Integer.parseInt(args[2]));
 		}
+
 
 	}
 	
@@ -53,11 +60,12 @@ public class Peer {
 	 *
 	 */
 	public void autoUpdateListenPeers(String host, int port) throws Exception {
+
 		System.out.println("Listening to port: "+ port + "\n");
 			Socket socket = null;
 			try {
 				socket = new Socket(host, port);
-				new ClientThread(socket).start();
+				new ClientThread(socket).start(); //new node
 			} catch (Exception c) {
 				if (socket != null) {
 					socket.close();
@@ -74,10 +82,8 @@ public class Peer {
 	 * Per default we listen to no one
 	 *
 	 */
-	public void updateListenToPeers1(String host) throws Exception {
+	public void updateListenToPeers1(String host,int port) throws Exception {
 		System.out.println("> Who do you want to listen to?\n");
-		int port = 0;
-
 
 		boolean validInput = false;
 
@@ -119,16 +125,13 @@ public class Peer {
 	public void askForInput(){
 		try {
 			System.out.println("> You can now start chatting (exit to exit)");
-
 			while(true) {
 				String message = bufferedReader.readLine();
 				if (message.equals("exit")) {
 					System.out.println("bye, see you next time");
 					serverThread.sendMessage("{'username': '"+ username +"','message':'" + "exit" + "'}");
 					break;
-				} else if (message.equals("add")) {
-					updateListenToPeers1("localhost");
-				} else {
+				}else {
 					// we are sending the message to our server thread. this one is then responsible for sending it to listening peers
 					serverThread.sendMessage("{'username': '"+ username +"','message':'" + message + "'}");
 				}

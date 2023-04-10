@@ -20,12 +20,20 @@ public class ClientThread extends Thread{
 	public void run() {
 		while (true) {
 			JSONObject json = null;
+
 			try {
 				json = new JSONObject(bufferedReader.readLine());
 				System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
 			} catch (IOException e) {
-				throw new RuntimeException();
-//				System.out.println(json.getString("username") + "has left" );
+//				throw new RuntimeException();
+				System.out.println();
+				try {
+					json = new JSONObject(bufferedReader.readLine());
+					System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
+				} catch (IOException ex) {
+					throw new RuntimeException(ex);
+				}
+
 			}
 
 

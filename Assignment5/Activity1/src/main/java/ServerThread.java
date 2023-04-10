@@ -1,3 +1,5 @@
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -15,10 +17,16 @@ import java.util.Set;
 public class ServerThread extends Thread{
 	private ServerSocket serverSocket;
 	private Set<Socket> listeningSockets = new HashSet<Socket>();
+	Peer peer;
 	
 	public ServerThread(String portNum) throws IOException {
-		serverSocket = new ServerSocket(Integer.valueOf(portNum));
+		serverSocket = new ServerSocket(Integer.parseInt(portNum));
 	}
+
+	public void setPeer(Peer peer){
+		this.peer = peer;
+	}
+
 	
 	/**
 	 * Starting the thread, we are waiting for clients wanting to talk to us, then save the socket in a list
@@ -26,14 +34,39 @@ public class ServerThread extends Thread{
 	public void run() {
 		try {
 			while (true) {
+				JSONObject json = null;
 				Socket sock = serverSocket.accept();
+				System.out.println("------Connection made---------");
 				listeningSockets.add(sock);
+				peer.autoUpdateListenPeers("localhost", sock.getLocalPort());
+
+				sendMessageSock(response(listeningSockets));//sends out all socket list
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
+	public JSONObject response(Set<Socket> sock){
+		JSONObject json = new JSONObject();
+
+		json.put("data",sock);
+
+		return json;
+	}
+	/**
+	 * Sends lists of sockets as json obj
+	 */
+	void sendMessageSock(JSONObject message) {
+		try {
+			for (Socket s : listeningSockets) {
+				PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+				out.println(message);
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * Sending the message to the OutputStream for each socket that we saved
 	 */
