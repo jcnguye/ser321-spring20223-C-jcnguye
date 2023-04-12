@@ -14,14 +14,8 @@ import java.util.Set;
  */
 
 public class Leader {
-	private String username;
-	private BufferedReader bufferedReader;
-	private ServerThread serverThread;
+	public Leader(NodeThread serverThread){
 
-	public Leader(BufferedReader bufReader, String username, ServerThread serverThread){
-		this.username = username;
-		this.bufferedReader = bufReader;
-		this.serverThread = serverThread;
 	}
 	/**
 	 * Main method saying hi and also starting the Server thread where other peers can subscribe to listen
@@ -30,123 +24,18 @@ public class Leader {
 	 * @param args[1] port for server
 	 */
 	public static void main (String[] args) throws Exception {
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-		String username = args[0];
-		System.out.println("Hello " + username + " and welcome! Your port will be " + args[1]);
-		String host = "localhost";
-		int count = Integer.parseInt(args[3]); //node number it is
-		// starting the Server Thread, which waits for other peers to want to connect
-		ServerThread serverThread = new ServerThread(args[1]);
-
-		Leader peer = new Leader(bufferedReader, args[0], serverThread);
-		serverThread.setPeer(peer);
-		serverThread.start();
-		//Starting out when theres no active nodes
-		if(count == 1){
-//			peer.waitConnectionClient("local",);
-			peer.askForInput1(Integer.parseInt(args[2]));
-		} else if (count > 1) {
-			peer.autoUpdateListenPeers(host,Integer.parseInt(args[2]));
+		String ports = args[0];
+		String[] listPort = ports.split(":");
+		String[] money = new String[listPort.length];
+		String[] port = new String[listPort.length];
+		for(int i = 0; i < listPort.length; i++){
+			String[] splitArr = listPort[i].split("_");
+			money[i] = splitArr[0];
+			port[i] = splitArr[1];
+			int mon = Integer.parseInt(money[i]);
+			new NodeThread(port[i],mon);
 		}
 
-
-
 	}
-
-	/**
-	 * Auto update peers
-	 *
-	 */
-	public void autoUpdateListenPeers(String host, int port) throws Exception {
-
-		System.out.println("Listening to port: "+ port + "\n");
-		Socket socket = null;
-		try {
-			socket = new Socket(host, port);
-			new ClientThread(socket).start(); //new node
-		} catch (Exception c) {
-			if (socket != null) {
-				socket.close();
-			} else {
-				System.out.println("Port does not exist");
-				System.exit(0);
-			}
-		}
-		askForInput();
-	}
-
-	/**
-	 * User is asked to define who they want to subscribe/listen to
-	 * Per default we listen to no one
-	 *
-	 */
-	public void waitConnectionClient(String host,int port) throws Exception {
-		System.out.println("Listening to port: "+ port + "\n");
-
-		Socket socket = null;
-		try {
-			socket = new Socket(host, port);
-			new Client(socket).start(); //new node
-		} catch (Exception c) {
-			if (socket != null) {
-				socket.close();
-			} else {
-				System.out.println("Port does not exist");
-				System.exit(0);
-			}
-		}
-		askForInput();
-	}
-
-	/**
-	 * Client waits for user to input their message or quit
-	 *
-	 * @param bufReader bufferedReader to listen for user entries
-	 * @param username name of this peer
-	 * @param serverThread server thread that is waiting for peers to sign up
-	 */
-	public void askForInput(){
-		try {
-			System.out.println("> You can now start chatting (exit to exit)");
-			while(true) {
-				String message = bufferedReader.readLine();
-				if (message.equals("exit")) {
-					System.out.println("bye, see you next time");
-					serverThread.sendMessage("{'username': '"+ username +"','message':'" + "exit" + "'}");
-					break;
-				}else {
-					// we are sending the message to our server thread. this one is then responsible for sending it to listening peers
-					serverThread.sendMessage("{'username': '"+ username +"','message':'" + message + "'}");
-				}
-			}
-			System.exit(0);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void askForInput1(int port){
-		try {
-			System.out.println("Waiting for connection");
-			while(true) {
-				String message = bufferedReader.readLine();
-				System.out.println("> You can now start chatting (exit to exit)");
-				if (message.equals("exit")) {
-					System.out.println("bye, see you next time");
-					serverThread.sendMessage("{'username': '"+ username +"','message':'" + "exit" + "'}");
-					break;
-				}else {
-					// we are sending the message to our server thread. this one is then responsible for sending it to listening peers
-					serverThread.sendMessage("{'username': '"+ username +"','message':'" + message + "'}");
-				}
-			}
-			System.exit(0);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 
 }

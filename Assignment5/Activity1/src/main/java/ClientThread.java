@@ -1,9 +1,12 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.json.*;
+
+import javax.sound.sampled.Port;
 
 /**
  * Client 
@@ -12,29 +15,52 @@ import org.json.*;
  */
 
 public class ClientThread extends Thread{
-	private BufferedReader bufferedReader;
+
+
+	private InputStream in;
+	private OutputStream out;
+	private static Set<Integer> list = new HashSet<>();
+	Peer peer;
+	private static int port;
+	private static Socket sock;
 	
-	public ClientThread(Socket socket) throws IOException {
-		bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+	public ClientThread(Socket socket,Peer peer) throws IOException {
+		in = socket.getInputStream();
+		out = socket.getOutputStream();
+		this.sock = socket;
+		this.peer = peer;
+
 	}
 	public void run() {
+		//sends server ip and
+		String val = String.valueOf(this.peer.getServerThread().getPortNum());
+		UtilList.Send(out, val);
+		//recive list server ip and port
+		JSONArray obj = new JSONArray();
+		obj = new JSONArray(UtilList.Recieve(in));
+		//check if contains
+//		String[] p = input.split(" ");
+//		int ports = Integer.parseInt();
+		for (var element : obj) {
+			Integer num = (Integer) element;
+			try {
+				peer.autoUpdateListenPeers("localhost", num, peer);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+
+		System.out.println("Heres your ports");
+		//got your message
 		while (true) {
 			JSONObject json = null;
-
-			try {
-				json = new JSONObject(bufferedReader.readLine());
+//			String msg = UtilList.Recieve(in);//wait here
+				json = new JSONObject(UtilList.Recieve(in));
+			System.out.println("---Message taken---");
+//			System.out.println("message " + msg);
 				System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
-			} catch (IOException e) {
-				System.out.println();
-				try {
-					json = new JSONObject(bufferedReader.readLine());
-					System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
-				} catch (IOException ex) {
-					throw new RuntimeException(ex);
-				}
-
-			}
-
 
 		}
 	}

@@ -1,7 +1,7 @@
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -18,11 +18,16 @@ import java.util.Set;
 public class ServerThread extends Thread{
 	private ServerSocket serverSocket;
 	private Set<Socket> listeningSockets = new HashSet<Socket>();
-//	private Set<Socket> listeningSockets = new HashSet<Socket>();
 	Peer peer;
-	
+	private int portNum;
+
+	public int getPortNum() {
+		return portNum;
+	}
+
 	public ServerThread(String portNum) throws IOException {
 		serverSocket = new ServerSocket(Integer.parseInt(portNum));
+		this.portNum = Integer.parseInt(portNum);
 	}
 
 	public void setPeer(Peer peer){
@@ -37,12 +42,25 @@ public class ServerThread extends Thread{
 		try {
 			while (true) {
 				JSONObject json = null;
-				Socket sock = serverSocket.accept(); //waits
+				Socket sock = serverSocket.accept(); //waits and accepts connection
 				System.out.println("------Connection made---------");
-				listeningSockets.add(sock);
-				peer.autoUpdateListenPeers("localhost", sock.getLocalPort());
+				//open input stream
+				InputStream in = sock.getInputStream();
+				//read in server ip and port num from client
+				String ip = UtilList.Recieve(in);
+//				int ports = Integer.parseInt(String.valueOf(sock.getLocalPort()));
+				int ports = Integer.parseInt(ip);
 
-				sendMessageSock(response(listeningSockets));//sends out all socket list
+				//open output stream
+				OutputStream out = sock.getOutputStream();
+				//sends list of current connections made server ip and port
+				JSONArray peers = new JSONArray();
+
+				UtilList.connectedPeers.forEach(peers::put);
+				//adds socket to list of listening sock
+				UtilList.Send(out,peers.toString());
+				peer.autoUpdateListenPeers("localhost", ports,peer);
+				listeningSockets.add(sock);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -67,8 +85,7 @@ public class ServerThread extends Thread{
 	void sendMessageSock(JSONObject message) {
 		try {
 			for (Socket s : listeningSockets) {
-				PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-				out.println(message);
+				UtilList.Send(s.getOutputStream(),message.toString());
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -80,9 +97,8 @@ public class ServerThread extends Thread{
 	void sendMessage(String message) {
 		try {
 			for (Socket s : listeningSockets) {
-				PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-				out.println(message);
-		     }
+				UtilList.Send(s.getOutputStream(),message);
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

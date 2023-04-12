@@ -26,18 +26,18 @@ task runPeer(type: JavaExec) {
 task leader(type: JavaExec) {
     group 'Run App'
     description 'Creates client socket sends a message to the server'
-
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
-
     main = 'Leader'
     standardInput = System.in
-    if (project.hasProperty('name') && project.hasProperty('port') && project.hasProperty('node')) {
-        args(project.getProperty('name'), project.getProperty('port'),project.getProperty('node'))
+    if (project.hasProperty('node')) {
+        args(project.getProperty('node'))
     }else{
-        args 'name', 7000, 'null'
+        args "5963_6000:7932_7000:7582_8000"
     }
 }
+
+
 task client(type: JavaExec) {
     group 'Run App'
     description 'Creates client socket sends a message to the server'
@@ -47,10 +47,10 @@ task client(type: JavaExec) {
 
     main = 'Leader'
     standardInput = System.in
-    if (project.hasProperty('name') && project.hasProperty('port') && project.hasProperty('node')) {
-        args(project.getProperty('name'), project.getProperty('port'),project.getProperty('node'))
+    if (project.hasProperty('id') && project.hasProperty('port')) {
+        args(project.getProperty('id'), project.getProperty('port'))
     }else{
-        args 'name', 6000, 'null'
+        args 'Name', 6000
     }
 }
 
