@@ -1,5 +1,4 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,8 +12,17 @@ import java.util.Set;
  *
  */
 
-public class Leader {
-	public Leader(NodeThread serverThread){
+public class Leader extends Thread{
+	private Set<Socket> listeningSockets = new HashSet<Socket>();
+	private Socket socket;
+	private ServerSocket serverSocket;
+	public Leader(Socket socket, ServerSocket serverSocket,Set<Socket> listeningSockets){
+		this.socket = socket;
+		this.serverSocket = serverSocket;
+		this.listeningSockets = listeningSockets;
+	}
+
+	public void run(){
 
 	}
 	/**
@@ -26,15 +34,16 @@ public class Leader {
 	public static void main (String[] args) throws Exception {
 		String ports = args[0];
 		String[] listPort = ports.split(":");
-		String[] money = new String[listPort.length];
-		String[] port = new String[listPort.length];
-		for(int i = 0; i < listPort.length; i++){
-			String[] splitArr = listPort[i].split("_");
-			money[i] = splitArr[0];
-			port[i] = splitArr[1];
-			int mon = Integer.parseInt(money[i]);
-			new NodeThread(port[i],mon);
-		}
+
+
+//		String[] money = new String[listPort.length];
+//		String[] port = new String[listPort.length];
+//		for(int i = 0; i < listPort.length; i++){
+//			String[] splitArr = listPort[i].split("_");
+//			money[i] = splitArr[0];
+//			port[i] = splitArr[1];
+//			int mon = Integer.parseInt(money[i]);
+//		}
 
 	}
 

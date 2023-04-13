@@ -55,13 +55,8 @@ public class ClientThread extends Thread{
 		System.out.println("Heres your ports");
 		//got your message
 		while (true) {
-			JSONObject json = null;
-//			String msg = UtilList.Recieve(in);//wait here
-				json = new JSONObject(UtilList.Recieve(in));
-			System.out.println("---Message taken---");
-//			System.out.println("message " + msg);
+			JSONObject json = new JSONObject(UtilList.Recieve(in));
 				System.out.println("[" + json.getString("username")+"]: " + json.getString("message"));
-
 		}
 	}
 

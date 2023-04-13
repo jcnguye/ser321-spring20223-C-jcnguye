@@ -12,17 +12,6 @@ dependencies {
 //define main class
 mainClassName = 'SimpleServer'
 
-task runPeer(type: JavaExec) {
-  description 'Runs a peer'
-
-  classpath = sourceSets.main.runtimeClasspath
-
-  main = 'Peer'
-  standardInput = System.in
-        args 'name' // username
-        args '7000' // port
-        args 'localhost'
-}
 task leader(type: JavaExec) {
     group 'Run App'
     description 'Creates client socket sends a message to the server'
@@ -54,19 +43,19 @@ task client(type: JavaExec) {
     }
 }
 
-task server(type: JavaExec) {
+task runNode(type: JavaExec) {
     group 'Run App'
     description 'Creates client socket sends a message to the server'
 
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 
-    main = 'ServerThread'
+    main = 'Node'
     standardInput = System.in
-    if (project.hasProperty('port')) {
-        args(project.getProperty('port'))
+    if (project.hasProperty('port') && project.hasProperty('money')) {
+        args(project.getProperty('port'),project.getProperty('money'))
     }else{
-        args 7000
+        args 7000,5350
     }
 }
 

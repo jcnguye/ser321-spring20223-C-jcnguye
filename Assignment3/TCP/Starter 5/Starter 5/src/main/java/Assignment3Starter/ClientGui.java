@@ -202,6 +202,8 @@ public class ClientGui implements Assignment3Starter.OutputPanel.EventHandlers{
         name = input1;
         flag1 = 1;
         NetworkUtils.Send(out, JsonUtils.toByteArray(req));
+
+
         byte[] responseBytes = NetworkUtils.Receive(in);
         JSONObject response = JsonUtils.fromByteArray(responseBytes);
         if(response.isEmpty()){
