@@ -1,9 +1,9 @@
 #### Purpose
-Program runs client, node, and leader that implements a simple leader algorithm. Cleint should be able to make
+Program runs client, node, and leader that implements a simple leader algorithm. Client should be able to make
 
 multiple request where leader grabs money from the bank to loan to client.
 
-Communicatiions starts out as 
+Communications starts out as 
 
 Client -> Leader -> Node -> Leader -> Client
 
@@ -17,9 +17,16 @@ Client -> Leader -> Node -> Leader -> Client
    we need to know about it. (if you do not include a screencast you might lose
    more points if we cannot see some of your features).
 2. [] Explain how to run your program, be specific on what we need to do.
-3. [] c) Explain how your different systems communicate with each other.
+3. [] c) Explain how your different systems communicate with each other. 
+
+    Program starts up with a leader, which then node makes a connections to leader gets a response back from
+    leader, from there client can make request to leader from leader get money from nodes and send back to client amount borrowed and pay back
+
 4. [] d) Explain your project and which requirements you were able to fulfill.
 5. [] e) Explain your protocol.
+
+    Client makes a request that is always associated with a type for request like credit and payback, 
+
 6. [] (3 point) Project is well-structured and easy to understand.
 7. Starting the program: the order in which we need to start things is up to you but
    you need to tell us in your Reamde.

@@ -1,0 +1,7 @@
+Client request credit
+    type, Credit
+    Money, Amount
+Client request payback
+    type, Payback
+    Money, Amount
+Leader

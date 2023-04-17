@@ -2,9 +2,9 @@
 Very basic peer-2-peer for a chat. All peers can communicate with each other. 
 
 Each peer is client and server at the same time. 
-When started the peer has a serverthread in which the peer listens for potential other peers to connect thats automatiic.
+When started the peer has a serverthread in which the peer listens for potential other peers to connect thats automatically.
 
-Chattiing starts when client joins
+Chatting starts when client joins
 
 Client Thread constantly listens.
 
@@ -19,4 +19,4 @@ Pport = the client port
 Pnode = the port its tryiing to connect
 Pip = the name of the client
 
-Will automaticlly listen to any number of peers when client tries to join. Unfortinately does not properly exiit.
+Will automatically listen to any number of peers when client tries to join. Unfortunately does not properly exit.
