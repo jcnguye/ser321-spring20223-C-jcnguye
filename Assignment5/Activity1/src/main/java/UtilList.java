@@ -35,8 +35,10 @@ public class UtilList {
             buffer.put(in.readNBytes(byteCount));
             return new String(buffer.array(),StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
+            System.out.println("User has left");
         }
+        return "";
     }
 
 }

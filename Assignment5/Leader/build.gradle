@@ -19,10 +19,10 @@ task leader(type: JavaExec) {
     standardInput = System.in
     main = 'Leader'
     standardInput = System.in
-    if (project.hasProperty('node')) {
-        args(project.getProperty('node'))
+    if (project.hasProperty('port')) {
+        args(project.getProperty('port'))
     }else{
-        args "5963_6000:7932_7000:7582_8000"
+        args 7000
     }
 }
 
@@ -34,12 +34,12 @@ task client(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
 
-    main = 'Leader'
+    main = 'Client'
     standardInput = System.in
-    if (project.hasProperty('id') && project.hasProperty('port')) {
-        args(project.getProperty('id'), project.getProperty('port'))
+    if (project.hasProperty('port')&&project.hasProperty('cport')) {
+        args(project.getProperty('port'),project.getProperty('cport'))
     }else{
-        args 'Name', 6000
+        args 7000,5050
     }
 }
 
@@ -52,10 +52,10 @@ task runNode(type: JavaExec) {
 
     main = 'Node'
     standardInput = System.in
-    if (project.hasProperty('port') && project.hasProperty('money')) {
-        args(project.getProperty('port'),project.getProperty('money'))
+    if (project.hasProperty('port') && project.hasProperty('money')&&project.hasProperty("node")) {
+        args(project.getProperty('node'),project.getProperty('money'),project.getProperty('port'))
     }else{
-        args 7000,5350
+        args 2000,5350,7000
     }
 }
 

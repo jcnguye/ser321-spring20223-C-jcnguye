@@ -49,7 +49,7 @@ public class Peer {
 		String ip = args[0];
 		String port = args[1];//localport
 		int node = Integer.parseInt(args[2]);//port trying to connect to
-		System.out.println("Hello your name" + ip + " and welcome! Your port will be " + port);
+		System.out.println("Hello your name " + ip + " and welcome! Your port will be " + port);
 		// starting the Server Thread, which waits for other peers to want to connect
 		ServerThread serverThread = new ServerThread(port);
 		Peer peer = new Peer(ip, serverThread);
