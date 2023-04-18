@@ -11,20 +11,35 @@ import org.json.*;
  * We are constantly listening and if we get a message we print it.
  */
 public class Client {
-    public String name;
+    public static String name;
     Socket socket;
-    ServerSocket serverSocket;
-    public Client(Socket socket,ServerSocket serverSocket){
+//    ServerSocket serverSocket;
+    public Client(Socket socket){
         this.socket = socket;
-        this.serverSocket = serverSocket;
+//        this.serverSocket = serverSocket;
     }
 
 	public static JSONObject reqGetCreditAmount(){
 		JSONObject obj = new JSONObject();
+//        Scanner in = new Scanner(System.in);
+//        int money = in.nextInt();
 		obj.put("type","creditAmount");
-        obj.put("Client",0);
+        obj.put("User",name);
+//        obj.put("Money",money);
 		return obj;
 	}
+
+    public static JSONObject reqBorrowCredit(){
+        JSONObject obj = new JSONObject();
+        int amount = 0;
+        Scanner input = new Scanner(System.in);
+        System.out.println("Enter amount you want to borrow");
+        amount = input.nextInt();
+        obj.put("type","Credit");
+        obj.put("Credit",amount);
+        obj.put("User",name);
+        return obj;
+    }
     int count = 0;
     public void run() throws Exception {
 //        ServerSocket serverSocket = new ServerSocket(socket.getLocalPort());
@@ -65,14 +80,27 @@ public class Client {
                 } catch (NumberFormatException e) {
                     System.out.println("Not a number");
                 }
+                if(choice < 1 || choice > 4){
+                    flag1 = true;
+                    System.out.println("Not a valid option try again");
+                    System.out.println("1. Request amount borrowed");
+                    System.out.println("2. Request to borrow");
+                    System.out.println("3. Pay bank back");
+                    System.out.println("4. exit menu");
+                }
             }
             switch (choice) {
                 case 1:
 					req = reqGetCreditAmount();
                     break;
                 case 2:
+
+
+
+                    req = reqBorrowCredit();
                     break;
                 case 3:
+
                     break;
                 case 4:
                     break;
@@ -87,8 +115,8 @@ public class Client {
 			JSONObject response = JsonUtils.fromByteArray(responseBytes);
             String type = response.getString("type");
             switch (type){
-                case "amount":
-                    System.out.println("Total borrowed: " + response.getInt("total"));
+                case "creditAmount":
+                    System.out.println(response.getString("Data"));
                     break;
                 default:
                     System.out.println("No valid option");
@@ -111,7 +139,7 @@ public class Client {
         JSONObject req = new JSONObject();
         req.put("type","NamePromp");
         req.put("Client",0);
-        req.put("Port",serverSocket.getLocalPort());
+//        req.put("Port",serverSocket.getLocalPort());
         try {
             NetworkUtils.Send(out, JsonUtils.toByteArray(req));
 
@@ -154,8 +182,8 @@ public class Client {
             byte[] responseBytes = NetworkUtils.Receive(in);
             JSONObject response = JsonUtils.fromByteArray(responseBytes);
             System.out.println("Message recieved");
-            if(response.has("Data")){
-                System.out.println(response.getString("Data"));
+            if(response.has("Notify")){
+                System.out.println(response.getString("Notify"));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -164,9 +192,9 @@ public class Client {
 
 
     public static void main(String[] args) throws Exception {
-        ServerSocket socket1 = new ServerSocket(Integer.parseInt(args[1]));
+
         Socket socket = new Socket("localhost", Integer.parseInt(args[0]));
-        Client client = new Client(socket,socket1);
+        Client client = new Client(socket);
         client.run();
 
 //
