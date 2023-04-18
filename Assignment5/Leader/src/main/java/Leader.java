@@ -34,15 +34,9 @@ public class Leader {
     private InputStream inputStream;
     private OutputStream outputStream;
 
-
-
     private HashMap<Integer, InputStream> integerInputStreamHashMap = new HashMap<>();
     private HashMap<Integer, OutputStream> outputStreamHashMap = new HashMap<>();
 
-    //	public Leader(ServerSocket serverSocket){
-//
-//		this.SocketLeader = serverSocket;
-//	}
     private static JSONObject resName(String name) {
         JSONObject obj = new JSONObject();
         obj.put("Data", "Hello " + name);
@@ -82,6 +76,23 @@ public class Leader {
             e.printStackTrace();
         }
     }
+    private void sendJsonNodePayBack(JSONObject res) throws IOException {
+        try {
+            System.out.println("---Sending to nodes---");
+            System.out.println(res.toString());
+            int splitAmout = 0;
+            if(res.has("Money")){
+                splitAmout = res.getInt("Money") / listeningSockets.size();
+            }
+            JSONObject object = new JSONObject();
+            object.put("type","PayBack");
+            object.put("Name",res.getString("User"));
+            object.put("Money",splitAmout);
+            outPutSendJson(object);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     private void outPutSendJson(JSONObject res) throws IOException {
         for (OutputStream out : outputStreamHashMap.values()) {
             NetworkUtils.Send(out, JsonUtils.toByteArray(res));
@@ -89,6 +100,8 @@ public class Leader {
         for (InputStream in : integerInputStreamHashMap.values()) {
             byte[] responseBytes = NetworkUtils.Receive(in);
             JSONObject req = JsonUtils.fromByteArray(responseBytes);
+
+
             if (req.has("Message")) {
                 System.out.println(req.getString("Message"));
             }
@@ -96,7 +109,6 @@ public class Leader {
     }
 
     public void run() {
-        boolean flag = true;
 
 
         while (true) {
@@ -133,7 +145,6 @@ public class Leader {
                             res.put("Client", 0);
                             break;
                         case "Credit":
-
                             int numBanks = listeningSockets.size();
                             int amountLoan = req.getInt("Credit");
                             clientRecord.put(req.getString("User"), amountLoan);
@@ -143,8 +154,6 @@ public class Leader {
                             res.put("Money", splitAmount);
                             res.put("Name",req.getString("User"));
                             sendJsonNodeCredit(res);
-
-
                         case "creditAmount":
                             res = new JSONObject();
                             res.put("type", "creditAmount");
@@ -159,26 +168,32 @@ public class Leader {
                             res.put("Data", req.get("User") + " has borrowed " + amountBorrowed);
                             res.put("Client", 0);
                             break;
+                        case "PayBack":
+                            res = new JSONObject();
+                            int amountSub = req.getInt("Money");//crashes
+                            int amountOwed = clientRecord.get(req.get("User"));
+                            if(amountSub > amountOwed){
+                                res.put("type","PayBack");
+                                res.put("Message", req.getString("User") + " can not pay back there is "+ clientRecord.get(req.get("User")));
+                                res.put("Client", 0);
+                            }else{
+                                amountOwed = amountOwed - amountSub;
+                                clientRecord.put(req.getString("User"),amountOwed);
+                                sendJsonNodePayBack(req);
+                                res.put("type","PayBack");
+                                res.put("Message", req.get("User") + " still owes "+ clientRecord.get(req.get("User")));
+                                res.put("Client", 0);
+                            }
+                            break;
                         default:
                             System.out.println("No valid option");
+                            System.out.println("No valid request option");
+                            res = new JSONObject();
+                            res.put("type","Error");
+                            res.put("Message","No Valid Option");
                             break;
                     }
                 }
-//				if(req.has("ServerPort")){
-//					Socket sock = new Socket("localhost",req.getInt("ServerPort"));
-//					listeningSockets.add(sock);
-//					res = new JSONObject();
-//					res.put("ServerMessage","Port "+ sock.getPort() + " is connected");
-//				}
-//				else{
-//					if(req.has("Node") && !listeningSockets.contains(socket)){
-//						listeningSockets.add(new Socket("localhost",req.getInt("ServerPort")));
-//						System.out.println("added to listen sockets port " + socket.getLocalPort());
-//						System.out.println("Listening socket size " + listeningSockets.size());
-//						res = responseNodeAdded();
-//					}
-//				}
-
                 if (res != null) {
                     System.out.println("Sending message");
                     if (!res.has("Client")) {
@@ -216,15 +231,6 @@ public class Leader {
         while (true) {
             //tried adding here issue is cant add on a thread
             System.out.println("Wait for connection");
-
-//			InputStream inputStream = Socket.getInputStream();
-////			OutputStream outputStream = Socket.getOutputStream();
-//			byte[] responseBytes = NetworkUtils.Receive(inputStream);
-//			JSONObject req = JsonUtils.fromByteArray(responseBytes);
-//
-//			if(req.has("Node") && !listeningSockets.contains(Socket)){
-//						listeningSockets.add(new Socket("localhost",req.getInt("ServerPort")));
-//			}
 
             Socket = server.accept();
 //			listeningSockets.add(Socket);

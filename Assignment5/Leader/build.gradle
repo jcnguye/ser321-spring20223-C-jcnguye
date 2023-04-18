@@ -14,7 +14,7 @@ mainClassName = 'SimpleServer'
 
 task leader(type: JavaExec) {
     group 'Run App'
-    description 'Runs the leader'
+    description 'Runs the leader where client and leader communicates to'
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
     main = 'Leader'
@@ -22,14 +22,14 @@ task leader(type: JavaExec) {
     if (project.hasProperty('port')&&project.hasProperty('node')) {
         args(project.getProperty('port'),project.getProperty('node'))
     }else{
-        args 4000,"7000,7001"
+        args 4000,"7000:7001"
     }
 }
 
 
 task client(type: JavaExec) {
     group 'Run App'
-    description 'Creates client socket sends a message to the server'
+    description 'Runs the client application connects to leader'
 
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
@@ -43,9 +43,9 @@ task client(type: JavaExec) {
     }
 }
 
-task runNode(type: JavaExec) {
+task runNode1(type: JavaExec) {
     group 'Run App'
-    description 'Creates client socket sends a message to the server'
+    description 'Creates a node for leader to connect'
 
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
@@ -56,6 +56,22 @@ task runNode(type: JavaExec) {
         args(project.getProperty('port'),project.getProperty('money'))
     }else{
         args 7000,8535
+    }
+}
+
+task runNode2(type: JavaExec) {
+    group 'Run App'
+    description 'Creates a node for leader to connect'
+
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+
+    main = 'Node'
+    standardInput = System.in
+    if (project.hasProperty('money')&&project.hasProperty("port")) {
+        args(project.getProperty('port'),project.getProperty('money'))
+    }else{
+        args 7001,8535
     }
 }
 

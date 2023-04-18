@@ -72,14 +72,27 @@ public class Node {
                             }else{
                                 clientAccount.put(request.getString("Name"),request.getInt("Money"));
                             }
-
                             response = new JSONObject();
-                            response.put("Message", request.getString("Name") + " has borrowed "+ clientAccount.get(request.getString("Name")) + "from bank");
-                            System.out.println("RECIVE CREDIT");
-
+                            response.put("Message", request.getString("Name") + " has borrowed "+ clientAccount.get(request.getString("Name")) + " from bank");
+//                            System.out.println("RECIVE CREDIT");
+                            break;
+                        case "PayBack":
+                            money = money + request.getInt("Money");
+                            int val1 = clientAccount.get(request.getString("Name"));
+                            if(val1 == 0){
+                                System.out.println(request.getString("Name") + " does not owe any money");
+                            }else{
+                                val1 = val1 - request.getInt("Money");
+                                clientAccount.put(request.getString("Name"),val1);
+                            }
+                            response = new JSONObject();
+                            response.put("Message", request.getString("Name") + " has payed back "+ clientAccount.get(request.getString("Name")) + "from bank");
                             break;
                         default:
                             System.out.println("No valid request option");
+                            response = new JSONObject();
+                            response.put("type","Error");
+                            response.put("Message","No Valid Option");
                             break;
                     }
                 }
@@ -88,6 +101,7 @@ public class Node {
                 if (response != null) {
                     NetworkUtils.Send(out, JsonUtils.toByteArray(response));
                 }
+                System.out.println("Amount in the bank - " + money);
             }
         } catch (Exception e) {
             e.printStackTrace();
