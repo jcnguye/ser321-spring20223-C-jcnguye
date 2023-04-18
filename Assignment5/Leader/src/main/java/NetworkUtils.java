@@ -24,7 +24,7 @@ public class NetworkUtils {
   // read the bytes on the stream
   private static byte[] Read(InputStream in, int length) throws IOException {
     byte[] bytes = new byte[length];
-    System.out.println("Read in bytes: " + length);
+//    System.out.println("Read in bytes: " + length);
     int bytesRead = 0;
     try {
       bytesRead = in.read(bytes, 0, length);
@@ -48,6 +48,7 @@ public class NetworkUtils {
     byte[] message = Read(in, length);
     if (message == null)
       return new byte[0];
+
     return message;
   }
 }

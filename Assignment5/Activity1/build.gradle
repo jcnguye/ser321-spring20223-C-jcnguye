@@ -22,8 +22,8 @@ task runPeer(type: JavaExec) {
   main = 'Peer'
   standardInput = System.in
         args 'name' // username
-        args '7000' // port
-        args 'localhost'
+        args 7000 // port
+        args 6000
 }
 task runActivity(type: JavaExec) {
     group 'client'
