@@ -4,4 +4,15 @@ Client request credit
 Client request payback
     type, Payback
     Money, Amount
-Leader
+    Client, 0   //purpose is to flag sending to client or to node
+Leader response payback
+    type,payback
+    message, string
+    Client, 0   //purpose is to flag sending to client or to node
+Leader response credit
+    type,payback
+    message, string
+    Client, 0   //purpose is to flag sending to client or to node
+Node Payback
+    Vote, yes
+    Money, int

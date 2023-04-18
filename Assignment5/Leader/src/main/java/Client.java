@@ -40,6 +40,16 @@ public class Client {
         obj.put("User",name);
         return obj;
     }
+    public static JSONObject reqPayBack(){
+        JSONObject obj = new JSONObject();
+        Scanner input = new Scanner(System.in);
+        System.out.println("Enter amount you want to pay back");
+        int amount = input.nextInt();
+        obj.put("type","PayBack");
+        obj.put("User",name);
+        obj.put("Money",amount);
+        return obj;
+    }
     int count = 0;
     public void run() throws Exception {
 //        ServerSocket serverSocket = new ServerSocket(socket.getLocalPort());
@@ -94,15 +104,14 @@ public class Client {
 					req = reqGetCreditAmount();
                     break;
                 case 2:
-
-
-
                     req = reqBorrowCredit();
                     break;
                 case 3:
-
+                    req = reqPayBack();
                     break;
                 case 4:
+                    System.out.println("Exiting bank");
+                    System.exit(0);
                     break;
                 default:
                     System.out.println("No valid option");
@@ -117,6 +126,9 @@ public class Client {
             switch (type){
                 case "creditAmount":
                     System.out.println(response.getString("Data"));
+                    break;
+                case "PayBack":
+                    System.out.println(response.getString("Message"));
                     break;
                 default:
                     System.out.println("No valid option");
