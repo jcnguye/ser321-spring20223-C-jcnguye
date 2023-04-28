@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import buffers.RequestProtos.Request;
@@ -17,7 +18,7 @@ import service.*;
 
 
 public class HomeImpl extends HometownsGrpc.HometownsImplBase{
-    ArrayList<People> peopleArrayList = new ArrayList<>();
+    List<People> peopleArrayList = new ArrayList<>();
     public HomeImpl(){
         peopleArrayList.add(new People("West","Phoenix","Dave"));
         peopleArrayList.add(new People("Midwest","Ohio","Gary"));
@@ -32,6 +33,9 @@ public class HomeImpl extends HometownsGrpc.HometownsImplBase{
         return null;
     }
     public void addPeople(String name, String reign,String city){
+        System.out.println("Adding name: " + name);
+        System.out.println("Adding region: " + reign);
+        System.out.println("Adding city: " + city);
         People people = new People(reign,city,name);
         peopleArrayList.add(people);
     }
@@ -53,10 +57,8 @@ public class HomeImpl extends HometownsGrpc.HometownsImplBase{
             hometown.setCity(people.city);
             hometown.setName(people.name);
             hometown.setRegion(people.region);
-            response.setHometowns(0,hometown);
+            response.addHometowns(hometown);
         }
-
-
         HometownsReadResponse resp = response.build();
         responseObserver.onNext(resp);
         responseObserver.onCompleted();
@@ -66,11 +68,31 @@ public class HomeImpl extends HometownsGrpc.HometownsImplBase{
     public void read(Empty empty, StreamObserver<HometownsReadResponse> responseObserver) {
 //        System.out.println("Received from client: " + req.getCity());
 //        JokeRes.Builder response = JokeRes.newBuilder();
+        HometownsReadResponse.Builder response = HometownsReadResponse.newBuilder();
+        response.setIsSuccess(true);
+//        response.addAllHometowns(peopleArrayList);
+        for(People people:peopleArrayList){
+            Hometown.Builder hometown = Hometown.newBuilder();
+            hometown.setCity(people.city);
+            hometown.setName(people.name);
+            hometown.setRegion(people.region);
+            response.addHometowns(hometown);
+        }
+        HometownsReadResponse resp = response.build();
+        responseObserver.onNext(resp);
+        responseObserver.onCompleted();
+
     }
     @Override
-    public void write (HometownsWriteRequest writeRequest, StreamObserver<HometownsWriteResponse> responseObserve) {
+    public void write (HometownsWriteRequest writeRequest, StreamObserver<HometownsWriteResponse> responseObserver) {
 //        System.out.println("Received from client: " + req.getCity());
-        JokeRes.Builder response = JokeRes.newBuilder();
+        addPeople(writeRequest.getHometown().getName(),writeRequest.getHometown().getRegion(),writeRequest.getHometown().getCity());
+        HometownsWriteResponse.Builder response = HometownsWriteResponse.newBuilder();
+        response.setIsSuccess(true);
+
+        HometownsWriteResponse resp = response.build();
+        responseObserver.onNext(resp);
+        responseObserver.onCompleted();
 
     }
 }

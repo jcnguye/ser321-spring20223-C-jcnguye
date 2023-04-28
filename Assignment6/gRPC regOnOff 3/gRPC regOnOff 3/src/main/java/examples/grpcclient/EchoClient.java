@@ -1,5 +1,6 @@
 package examples.grpcclient;
 
+import com.google.protobuf.Empty;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -77,6 +78,7 @@ public class EchoClient {
     try {
       response = blockingStub2Joke.setJoke(request);
 
+
       System.out.println(response.getOk());
     } catch (Exception e) {
       System.err.println("RPC failed: " + e);
@@ -128,6 +130,53 @@ public class EchoClient {
   }
 
   public void searchHometown(String city){
+    System.out.println("Searching for " + city + "\n");
+    HometownsSearchRequest request = HometownsSearchRequest.newBuilder().setCity(city).build();
+    HometownsReadResponse response;
+    try {
+      response = blockingStub5Home.search(request);
+      System.out.println("This persons name: "+ response.getHometowns(0).getName());
+      System.out.println("Lives in a city called: "+ response.getHometowns(0).getCity());
+      System.out.println("In a region: "+ response.getHometowns(0).getRegion() + "\n");
+//      System.out.println(response.getHometowns(0));
+    }catch (Exception e) {
+      System.err.println("RPC failed: " + e);
+    }
+  }
+
+  public void writeHometown(String city,String name, String region){
+    System.out.println("Writing to hometown");
+    Hometown.Builder hometown = Hometown.newBuilder();
+    hometown.setCity(city).setName(name).setRegion(region);
+
+    HometownsWriteRequest request = HometownsWriteRequest.newBuilder().setHometown(hometown).build();
+    HometownsWriteResponse response;
+    try {
+      response = blockingStub5Home.write(request);
+      if(response.getIsSuccess()){
+        System.out.println("Successfully written hometown\n");
+      }
+    }catch (Exception e) {
+      System.err.println("RPC failed: " + e);
+    }
+  }
+
+  public void readHometown(){
+    System.out.println("Reading hometown");
+    Empty empty = Empty.newBuilder().build();
+    HometownsReadResponse response;
+    try {
+      response = blockingStub5Home.read(empty);
+      System.out.println("List of hometowns");
+      for(Hometown hometown: response.getHometownsList()){
+        System.out.println("Name: " + hometown.getName());
+        System.out.println("Region: " + hometown.getRegion());
+        System.out.println("City: " + hometown.getCity() + "\n");
+      }
+      System.out.println("----End of list----\n");
+    }catch (Exception e) {
+      System.err.println("RPC failed: " + e);
+    }
 
   }
   //gradle
@@ -240,6 +289,9 @@ public class EchoClient {
           client.getNodeServices(); // get all registered services
           break;
         case 2:
+          client.searchHometown("Tampa");
+          client.writeHometown("Orange County","Flint","West");
+          client.readHometown();
           //implemented Hometown service here
           break;
         case 3:
