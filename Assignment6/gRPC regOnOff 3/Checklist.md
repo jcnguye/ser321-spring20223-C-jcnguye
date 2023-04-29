@@ -18,34 +18,10 @@
    successfully. See video about Task 1 for more details.
 5. [x] (5 points) Server and Client should be robust and not crash
 
-## Task 2
-1. MUST: Create a new version of your Node.java ==> NodeService.java and your
-   EchoClient.java ==> Client.java. You should be able to call them through "gradle
-   registerServiceNode" and "gradle runClient2" asking for the same parameters as the
-   calls that were already in the given Gradle file for the original files. This call will use
-   the Registry again, so is not the same as runClient from the previous task. These
-   should use default values so that they connect correctly!
-2. Turn the registry back on through the gradle command line flag.
-3. Test this: Run your Registry, run your node (you need to provide the correct host
-   and port of course) – you should set this as default values for us. You should see a
-   println on the Registry side that the service is registered. If you do not, try to figure
-   out what happened (or did not happen).
-4. Now, you should run your Client (also with the parts included which you need to
-   uncomment now) and see if it will find the registered services correctly.
-5. (8 points) If all this works, adapt your client so it does not just call the service on
-   the node you provide directly as was done in Task 1 but that the client can choose
-   between all services registered on the Registry (in this case locally it will still just be
-   your services. For testing purposes you can run a couple server nodes and register
-   all of them to your local registry. You do not hard code which server to talk to
-   anymore but use the following workflow:
-   a) Client contacts Registry to check for available services
-   b) Client shows all registered services it received from the registry in the terminal
-   and the client can choose one (preferably through numbering)
-   c) (You should basically have this already) Based on what the client chooses the
-   terminal should ask for input
-   d) The request should be sent to one of the available service nodes with the following workflow: 1) client should call the registry again and ask for a Server
-   providing the chosen service 2) the returned server should then be used (so the
-   ip and port), 3) should send the request to the server that was returned, 4)
-   return the response in a good way to the client
-   e) Make sure that your Client does not crash in case the Server did not respond
-   or crashed. Make it as robust as possible.
+## Task 2 inventing own service
+### Implemented a coin and dice game where user picks to roll a dice or flip a coin
+- [x] Service allows at least 2 different requests
+- [x] Each request needs at least 1 input
+- [x] Response returns different data for different requests
+- [x] Response returns a repeated field
+- [x] Data is held persistent on the server

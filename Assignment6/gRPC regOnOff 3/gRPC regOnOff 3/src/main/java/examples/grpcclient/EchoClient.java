@@ -23,6 +23,7 @@ public class EchoClient {
   private final RegistryGrpc.RegistryBlockingStub blockingStub4;
   private final HometownsGrpc.HometownsBlockingStub blockingStub5Home;
   private final ZodiacGrpc.ZodiacBlockingStub blockingStub6Zodiac;
+  private final CoinDiceGrpc.CoinDiceBlockingStub blockingStub7CoinDice;
 
   /** Construct client for accessing server using the existing channel. */
   public EchoClient(Channel channel, Channel regChannel) {
@@ -38,6 +39,7 @@ public class EchoClient {
     blockingStub4 = RegistryGrpc.newBlockingStub(channel);
     blockingStub5Home = HometownsGrpc.newBlockingStub(channel);
     blockingStub6Zodiac = ZodiacGrpc.newBlockingStub(channel);
+    blockingStub7CoinDice = CoinDiceGrpc.newBlockingStub(channel);
   }
 
   public void askServerToParrot(String message) {
@@ -221,6 +223,37 @@ public class EchoClient {
       System.err.println("RPC failed: " + e);
     }
   }
+
+  public void flipCoin(int numFlip){
+    System.out.println("Flipping coin");
+    CoinFlipRequest request = CoinFlipRequest.newBuilder().setNumFlips(numFlip).build();
+    CoinFlipResponse response;
+    try {
+      response = blockingStub7CoinDice.flipCoin(request);
+      for(String s: response.getCoinList()){
+        System.out.println(s);
+      }
+      System.out.println();
+    }catch (Exception e){
+      System.err.println("RPC failed: " + e);
+    }
+  }
+  public void rollDice(int numRolls, int numSide){
+    System.out.println("Rolling dice");
+    DiceRollRequest request = DiceRollRequest.newBuilder().setNumRolls(numRolls).setNumSides(numSide).build();
+    DiceRollResponse response;
+
+    try {
+      response = blockingStub7CoinDice.rollDice(request);
+      for(Integer s: response.getDiceList()){
+        System.out.println(s);
+      }
+      System.out.println();
+    }catch (Exception e){
+      System.err.println("RPC failed: " + e);
+    }
+  }
+
   //gradle
   public static void main(String[] args) throws Exception {
     String host = "";
@@ -327,6 +360,10 @@ public class EchoClient {
         client.findZodiac("Taurusdfew");
 
         System.out.println("----- End of Zodiac -----\n");
+        System.out.println("----- Own Service -----\n");
+        client.flipCoin(6);
+        client.rollDice(6,6);
+        System.out.println("----- End of service -----\n");
       }else{
         client.askServerToParrot(message);
         boolean flag = true;
@@ -395,42 +432,33 @@ public class EchoClient {
                     System.out.println("Not a number\n");
                   }
                 }
-                switch (choice1){
-                  case 1:
+                switch (choice1) {
+                  case 1 -> {
                     reader = new BufferedReader(new InputStreamReader(System.in));
-
                     System.out.println("Enter city name to search\n");
                     String city = reader.readLine();
                     client.searchHometown(city);
-                    break;
-                  case 2:
+                  }
+                  case 2 -> {
                     reader = new BufferedReader(new InputStreamReader(System.in));
                     boolean flag2 = true;
                     String[] data;
-                    do{
+                    do {
                       System.out.println("Enter city, name, and region where in format of ... City:Name:Region");
                       System.out.println("Example \t Orange County:Flint:West");
                       String input = reader.readLine();
                       data = input.split(":");
-                      if(data.length != 3){
+                      if (data.length != 3) {
                         System.out.println("Invalid size input\n");
-                      }else{
+                      } else {
                         flag2 = false;
                       }
-                    }while (flag2);
-
-                    client.writeHometown(data[0], data[1],data[2]);
-                    break;
-                  case 3:
-                    client.readHometown();
-                    break;
-                  case 4:
-                    break;
-                  case 5:
-                    flag1 = false;
-                    break;
-                  default:
-                    System.out.println("No valid options");
+                    } while (flag2);
+                    client.writeHometown(data[0], data[1], data[2]);
+                  }
+                  case 3 -> client.readHometown();
+                  case 4 -> flag1 = false;
+                  default -> System.out.println("No valid options");
                 }
               }while (flag1);
 
@@ -458,44 +486,79 @@ public class EchoClient {
                     System.out.println("Not a number\n");
                   }
                 }
-                switch (choice1){
-                  case 1:
+                switch (choice1) {
+                  case 1 -> {
                     reader = new BufferedReader(new InputStreamReader(System.in));
                     boolean flag3 = true;
                     String[] data;
-                    do{
+                    do {
                       System.out.println("Enter name, month and day in format of name:month:day");
                       System.out.println("Example Lizzy:May:26");
                       String input = reader.readLine();
                       data = input.split(":");
-                      if(data.length != 3){
+                      if (data.length != 3) {
                         System.out.println("Invalid size input\n");
-                      }else{
+                      } else {
                         flag3 = false;
                       }
-                    }while (flag3);
+                    } while (flag3);
                     client.signZodiac(data[0], data[1], Integer.parseInt(data[2]));
-                    break;
-                  case 2:
+                  }
+                  case 2 -> {
                     System.out.println("Enter the sign you are trying to find\n");
                     reader = new BufferedReader(new InputStreamReader(System.in));
                     String sign = reader.readLine();
                     client.findZodiac(sign);
-                    break;
-                  case 3:
-                    flag2= false;
-                    break;
-                  default:
-                    System.out.println("No valid option");
+                  }
+                  case 3 -> flag2 = false;
+                  default -> System.out.println("No valid option");
                 }
               }while (flag2);
               break;
             case 4:
+              boolean flag3 = true;
+              do {
+                System.out.println("1: Flip coin");
+                System.out.println("2: Roll dice");
+                System.out.println("3: exit coin dice service");
+                boolean numChoice1 = false;
+                while (!numChoice1){
+                  try {
+                    reader = new BufferedReader(new InputStreamReader(System.in));
+                    choice = Integer.parseInt(reader.readLine());
+                    if((choice >= 1) && (choice <= 3) ){
+                      numChoice1 = true;
+                    }else {
+                      System.out.println("Number not with in bounds pick between 1 - 2\n");
+                    }
+                  }catch (NumberFormatException e){
+                    System.out.println("Not a number\n");
+                  }
+                }
+                switch (choice) {
+                  case 1 -> {
+                    System.out.println("Enter number if times coin is flipped");
+                    reader = new BufferedReader(new InputStreamReader(System.in));
+                    int flip = Integer.parseInt(reader.readLine());
+                    client.flipCoin(flip);
+                  }
+                  case 2 -> {
+                    System.out.println("Enter number if times dice is rolled, and number of sides on dice in format <numRolls:numSides>");
+                    reader = new BufferedReader(new InputStreamReader(System.in));
+                    String input = reader.readLine();
+                    String[] data = input.split(":");
+                    client.rollDice(Integer.parseInt(data[0]), Integer.parseInt(data[1]));
+                  }
+                  case 3 -> flag3 = false;
+                  default -> System.out.println("No valid options");
+                }
 
+              }while (flag3);
+              client.flipCoin(6);
+              client.rollDice(6,6);
               break;
             case 5:
               flag = false;
-              System.exit(0);
               break;
             default:
 
@@ -505,248 +568,22 @@ public class EchoClient {
           if (args[5].equals("true")) {
             // Comment these last Service calls while in Activity 1 Task 1, they are not needed and wil throw issues without the Registry running
             // get thread's services
-            client.getServices(); // get all registered services
-
-            // get parrot
-            client.findServer("services.Echo/parrot"); // get ONE server that provides the parrot service
-
-            // get all setJoke
-            client.findServers("services.Joke/setJoke"); // get ALL servers that provide the setJoke service
-
-            // get getJoke
-            client.findServer("services.Joke/getJoke"); // get ALL servers that provide the getJoke service
-
-            // does not exist
-            client.findServer("random"); // shows the output if the server does not find a given service
+//            client.getServices(); // get all registered services
+//
+//            // get parrot
+//            client.findServer("services.Echo/parrot"); // get ONE server that provides the parrot service
+//
+//            // get all setJoke
+//            client.findServers("services.Joke/setJoke"); // get ALL servers that provide the setJoke service
+//
+//            // get getJoke
+//            client.findServer("services.Joke/getJoke"); // get ALL servers that provide the getJoke service
+//
+//            // does not exist
+//            client.findServer("random"); // shows the output if the server does not find a given service
           }
         }while (flag);
       }
-//      client.askServerToParrot(message);
-//      boolean flag = true;
-//      // ask the user for input how many jokes the user wants
-//      do{
-//        BufferedReader reader = null;
-//        int choice = 0;
-//        boolean numChoice = false;
-//        System.out.println("Pick number between  1 - 5 to run services\n");
-//        System.out.println("1: Run joke service");
-//        System.out.println("2: Run hometown service");
-//        System.out.println("3: Run zodiac service");
-//        System.out.println("4: Run registry service");
-//        System.out.println("5: Exit");
-//        while (!numChoice){
-//          try {
-//            reader = new BufferedReader(new InputStreamReader(System.in));
-//            choice = Integer.parseInt(reader.readLine());
-//            if((choice >= 1) && (choice <= 5) ){
-//              numChoice = true;
-//            }else {
-//              System.out.println("Number not with in bounds pick between 1 - 5\n");
-//            }
-//          }catch (NumberFormatException e){
-//            System.out.println("Not a number\n");
-//          }
-//        }
-//      switch (choice){
-//        case 1:
-//          reader = new BufferedReader(new InputStreamReader(System.in));
-//          // Reading data using readLine
-//          System.out.println("How many jokes would you like?"); // NO ERROR handling of wrong input here.
-//          String num = reader.readLine();
-//          // calling the joked service from the server with num from user input
-//          client.askForJokes(Integer.valueOf(num));
-//          // adding a joke to the server
-//          client.setJoke("I made a pencil with two erasers. It was pointless.");
-//          // showing 6 joked
-//          client.askForJokes(Integer.valueOf(6));
-//
-//          // list all the services that are implemented on the node that this client is connected to
-//
-//          System.out.println("Services on the connected node. (without registry)");
-//          client.getNodeServices(); // get all registered services
-//          break;
-//        case 2:
-//          boolean flag1 =true;
-//          do{
-//            System.out.println("Pick number between  1 - 4 \n");
-//            System.out.println("1: Search for hometown");
-//            System.out.println("2: Write hometown");
-//            System.out.println("3: Read Hometown");
-//            System.out.println("4: Exit out of hometown service");
-//            boolean numChoice1 = false;
-//            int choice1 = 0;
-//            while (!numChoice1){
-//              try {
-//                reader = new BufferedReader(new InputStreamReader(System.in));
-//                choice1 = Integer.parseInt(reader.readLine());
-//                if((choice1 >= 1) && (choice1 <= 4) ){
-//                  numChoice1 = true;
-//                }else {
-//                  System.out.println("Number not with in bounds pick between 1 - 4\n");
-//                }
-//              }catch (NumberFormatException e){
-//                System.out.println("Not a number\n");
-//              }
-//            }
-//            switch (choice1){
-//              case 1:
-//                reader = new BufferedReader(new InputStreamReader(System.in));
-//
-//                System.out.println("Enter city name to search\n");
-//                String city = reader.readLine();
-//                client.searchHometown(city);
-//                break;
-//              case 2:
-//                reader = new BufferedReader(new InputStreamReader(System.in));
-//                boolean flag2 = true;
-//                String[] data;
-//                do{
-//                  System.out.println("Enter city, name, and region where in format of ... City:Name:Region");
-//                  System.out.println("Example \t Orange County:Flint:West");
-//                  String input = reader.readLine();
-//                   data = input.split(":");
-//                   if(data.length != 3){
-//                     System.out.println("Invalid size input\n");
-//                   }else{
-//                     flag2 = false;
-//                   }
-//                }while (flag2);
-//
-//                client.writeHometown(data[0], data[1],data[2]);
-//                break;
-//              case 3:
-//                client.readHometown();
-//                break;
-//              case 4:
-//                flag1 = false;
-//                break;
-//              default:
-//                System.out.println("No valid options");
-//            }
-//          }while (flag1);
-//
-//          break;
-//        case 3:
-//          //implemented Zodiac service here
-//          boolean flag2 =true;
-//          do {
-//            System.out.println("Pick number between  1 - 3 \n");
-//            System.out.println("1: Add a sign for person");
-//            System.out.println("2: Find a sign of person");
-//            System.out.println("3: Exit out of zodiac service");
-//            boolean numChoice1 = false;
-//            int choice1 = 0;
-//            while (!numChoice1) {
-//              try {
-//                reader = new BufferedReader(new InputStreamReader(System.in));
-//                choice1 = Integer.parseInt(reader.readLine());
-//                if ((choice1 >= 1) && (choice1 <= 3)) {
-//                  numChoice1 = true;
-//                } else {
-//                  System.out.println("Number not with in bounds pick between 1 - 3\n");
-//                }
-//              } catch (NumberFormatException e) {
-//                System.out.println("Not a number\n");
-//              }
-//            }
-//            switch (choice1){
-//              case 1:
-//                reader = new BufferedReader(new InputStreamReader(System.in));
-//                boolean flag3 = true;
-//                String[] data;
-//                do{
-//                  System.out.println("Enter name, month and day in format of name:month:day");
-//                  System.out.println("Example Lizzy:May:26");
-//                  String input = reader.readLine();
-//                  data = input.split(":");
-//                  if(data.length != 3){
-//                    System.out.println("Invalid size input\n");
-//                  }else{
-//                    flag3 = false;
-//                  }
-//                }while (flag3);
-//                client.signZodiac(data[0], data[1], Integer.parseInt(data[2]));
-//                break;
-//              case 2:
-//                System.out.println("Enter the sign you are trying to find\n");
-//                reader = new BufferedReader(new InputStreamReader(System.in));
-//                String sign = reader.readLine();
-//                client.findZodiac(sign);
-//                break;
-//              case 3:
-//                flag2= false;
-//                break;
-//              default:
-//                System.out.println("No valid option");
-//            }
-//          }while (flag2);
-//          break;
-//        case 4:
-//          break;
-//        case 5:
-//          flag = false;
-//          System.exit(0);
-//          break;
-//        default:
-//
-//      }
-//
-//        // ############### Contacting the registry just so you see how it can be done
-//        if (args[5].equals("true")) {
-//          // Comment these last Service calls while in Activity 1 Task 1, they are not needed and wil throw issues without the Registry running
-//          // get thread's services
-//          client.getServices(); // get all registered services
-//
-//          // get parrot
-//          client.findServer("services.Echo/parrot"); // get ONE server that provides the parrot service
-//
-//          // get all setJoke
-//          client.findServers("services.Joke/setJoke"); // get ALL servers that provide the setJoke service
-//
-//          // get getJoke
-//          client.findServer("services.Joke/getJoke"); // get ALL servers that provide the getJoke service
-//
-//          // does not exist
-//          client.findServer("random"); // shows the output if the server does not find a given service
-//        }
-//      }while (flag);
-//      BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-//      // Reading data using readLine
-//      System.out.println("How many jokes would you like?"); // NO ERROR handling of wrong input here.
-//      String num = reader.readLine();
-//
-//      // calling the joked service from the server with num from user input
-//      client.askForJokes(Integer.valueOf(num));
-//
-//      // adding a joke to the server
-//      client.setJoke("I made a pencil with two erasers. It was pointless.");
-//
-//      // showing 6 joked
-//      client.askForJokes(Integer.valueOf(6));
-//
-//      // list all the services that are implemented on the node that this client is connected to
-//
-//      System.out.println("Services on the connected node. (without registry)");
-//      client.getNodeServices(); // get all registered services
-//
-//      // ############### Contacting the registry just so you see how it can be done
-//      if (args[5].equals("true")) {
-//        // Comment these last Service calls while in Activity 1 Task 1, they are not needed and wil throw issues without the Registry running
-//        // get thread's services
-//        client.getServices(); // get all registered services
-//
-//        // get parrot
-//        client.findServer("services.Echo/parrot"); // get ONE server that provides the parrot service
-//
-//        // get all setJoke
-//        client.findServers("services.Joke/setJoke"); // get ALL servers that provide the setJoke service
-//
-//        // get getJoke
-//        client.findServer("services.Joke/getJoke"); // get ALL servers that provide the getJoke service
-//
-//        // does not exist
-//        client.findServer("random"); // shows the output if the server does not find a given service
-//      }
 
     } finally {
       // ManagedChannels use resources like threads and TCP connections. To prevent
