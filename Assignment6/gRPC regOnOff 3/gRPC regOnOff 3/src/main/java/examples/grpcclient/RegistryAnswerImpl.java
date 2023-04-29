@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import service.*;
 
 public class RegistryAnswerImpl extends RegistryGrpc.RegistryImplBase {
-  private ArrayList<String> services;
+  private final ArrayList<String> services;
   public RegistryAnswerImpl(ArrayList<String> services) {
     super();
     this.services = services;
