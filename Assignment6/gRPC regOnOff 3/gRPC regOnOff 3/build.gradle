@@ -150,13 +150,21 @@ task runClient(type: JavaExec) {
   description = "Run Client"
   main = 'examples.grpcclient.EchoClient'
   standardInput = System.in
-  // default args
-  args serviceHost 
-  args servicePort
-  args registryHost
-  args grpcPort
-  args message 
-  args regOn
+
+    if(project.hasProperty("host")&&project.hasProperty("port")&&project.hasProperty("auto")){
+        args(project.getProperty('host'),project.getProperty('port'),project.getProperty('auto'))
+    }else{
+        // default args
+        args serviceHost
+        args servicePort
+        args registryHost
+        args grpcPort
+        args message
+        args regOn
+    }
+
+
+
 }
 
 // runs a service node which already has the echo and joke service included

@@ -1,6 +1,5 @@
 package examples.grpcclient;
 
-import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerMethodDefinition;
@@ -39,7 +38,8 @@ public class Node {
             .addService(new EchoImpl())
             .addService(new JokeImpl())
             .addService(new HomeImpl())
-            .addService(new RecipeImpl())
+            .addService(new ZodiacImpl())
+            .addService(new CoinDiceImpl())
             .addService(new RegistryAnswerImpl(services)).build().start();
 
     for (var service : server.getServices()) {

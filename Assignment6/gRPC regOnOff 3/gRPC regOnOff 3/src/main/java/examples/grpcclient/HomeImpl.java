@@ -21,7 +21,7 @@ public class HomeImpl extends HometownsGrpc.HometownsImplBase{
     List<People> peopleArrayList = new ArrayList<>();
     public HomeImpl(){
         peopleArrayList.add(new People("West","Phoenix","Dave"));
-        peopleArrayList.add(new People("Midwest","Ohio","Gary"));
+        peopleArrayList.add(new People("Midwest","Cleveland","Gary"));
         peopleArrayList.add(new People("South","Tampa","Brock"));
     }
     public People findPeople (String city){

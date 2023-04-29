@@ -1,0 +1,37 @@
+// This service saves classmates names and where they are from that clients add and keeps track of.
+// A client can read all hometowns, search for classmates by city, or add a new entry. The server should maintain the state even after crashing.
+// So you should save all the data in a JSON or proto file (that is up to you). When starting the server the server should read the data in.
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "CoinDiceProto";
+
+import "google/protobuf/empty.proto";
+
+package services;
+
+service CoinDice {
+  rpc flipCoin(CoinFlipRequest) returns (CoinFlipResponse ) {}
+  rpc rollDice(DiceRollRequest) returns (DiceRollResponse) {}
+
+}
+
+// The response message when reading the entries, either by read or search
+message CoinFlipRequest {
+  int32 numFlips = 1; //number of times coin is flipped
+}
+message DiceRollRequest {
+  int32 numRolls = 1; //number of times dice is rolled
+  int32 numSides = 2; //number of sides on the dice
+}
+// Response of coin flipped
+message CoinFlipResponse {
+  repeated string coin = 1; //Results of coin flipped
+}
+// Response of rolled dice
+message DiceRollResponse {
+  repeated int32 dice = 1; //Results of dice roll
+}
+
